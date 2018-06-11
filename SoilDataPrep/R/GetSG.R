@@ -13,5 +13,7 @@ GetSG<-
                  bbox(catch)[2,1],",",
                  bbox(catch)[2,2], ")")
     
-    download.file(url, destfile=paste0("SoilGrids/", SG_layers[i], ".tif"), mode = "wb") }
+    download.file(url, destfile=paste0("SoilGrids/", SG_layers[i], ".tif"), mode = "wb") 
+    
+    }
   }

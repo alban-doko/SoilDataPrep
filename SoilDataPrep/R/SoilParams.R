@@ -1,11 +1,11 @@
 SoilParams<-function(catch, DEM, c){
-  #comment
+  
   #devide study area into tiles
   h<-ceiling(ncol(DEM)/c) #number of horizontal tiles
   v<-ceiling(nrow(DEM)/c) #number of vertical tiles
   hcells<-ceiling(ncol(DEM)/h)
   vcells<-ceiling(nrow(DEM)/v)  
-  h*v #number of tiles to calculate
+  print(paste("Number of tiles to calculate:", h, "x", v, "=", h*v)) 
   
   soil_sum_collected = NULL #for aggregation of results of single tiles
   
@@ -24,8 +24,8 @@ SoilParams<-function(catch, DEM, c){
       if (sum(is.na(getValues(dem)))==length(getValues(dem))) next
       
       d5<-raster("Pelletier_DTB/depth_5.tif")
-      d6<-raster("Pelletier_DTB/depth_6.tif")
       d5<-crop(d5,dem)
+      d6<-raster("Pelletier_DTB/depth_6.tif")
       d6<-crop(d6,dem)
       slope<-terrain(dem, opt="slope", unit="degrees", neighbors=8)
       
@@ -45,7 +45,6 @@ SoilParams<-function(catch, DEM, c){
       dfun<-function(slope){ifelse(slope<20, 1,0)}
       depth_6<-calc(slope, fun=dfun)
       depth_6<-depth_6*d6
-      #plot(depth_6, main="d6")
       rm(slope)
       rm(d5)
       rm(d6)
@@ -63,7 +62,6 @@ SoilParams<-function(catch, DEM, c){
       
       #Aluvial
       afun<-function(depth){ifelse(depth>=3, 1,0)}
-      #  ifelse(depth<3,0,NA))}#1 means alluvial
       aluvial<-calc(depth, fun=afun)
       
       #unique(soils)
@@ -83,21 +81,20 @@ SoilParams<-function(catch, DEM, c){
         print(paste("- soillayer", soillayer, Sys.time(), "Memory in use:", memory.size(max=F)))
         
         clay<-raster(paste0("SoilGrids/CLYPPT_M_", soillayer, ".tif"))
-        silt<-raster(paste0("SoilGrids/SLTPPT_M_", soillayer, ".tif"))
-        sand<-raster(paste0("SoilGrids/SNDPPT_M_", soillayer, ".tif"))
-        coarse<-raster(paste0("SoilGrids/CRFVOL_M_", soillayer, ".tif"))
-        bulkD<-raster(paste0("SoilGrids/BLDFIE_M_", soillayer, ".tif"))
-        om<-raster(paste0("SoilGrids/ORCDRC_M_", soillayer, ".tif"))
-        ph<-raster(paste0("SoilGrids/PHIHOX_M_", soillayer, ".tif"))
-        cec<-raster(paste0("SoilGrids/CECSOL_M_", soillayer, ".tif"))
-        
         clay<-crop(clay, soils)
+        silt<-raster(paste0("SoilGrids/SLTPPT_M_", soillayer, ".tif"))
         silt<-crop(silt, soils)
+        sand<-raster(paste0("SoilGrids/SNDPPT_M_", soillayer, ".tif"))
         sand<-crop(sand, soils)
+        coarse<-raster(paste0("SoilGrids/CRFVOL_M_", soillayer, ".tif"))
         coarse<-crop(coarse, soils)
+        bulkD<-raster(paste0("SoilGrids/BLDFIE_M_", soillayer, ".tif"))
         bulkD<-crop(bulkD,soils)
+        om<-raster(paste0("SoilGrids/ORCDRC_M_", soillayer, ".tif"))
         om<-crop(om, soils)
+        ph<-raster(paste0("SoilGrids/PHIHOX_M_", soillayer, ".tif"))
         ph<-crop(ph, soils)
+        cec<-raster(paste0("SoilGrids/CECSOL_M_", soillayer, ".tif"))
         cec<-crop(cec,soils)
         
         soil_attributes=data.frame(clay  =getValues(clay),
@@ -140,7 +137,7 @@ SoilParams<-function(catch, DEM, c){
         #Calculate theta_s/2.5/1.8,s_f, h_b and lambda with ptf.rawls####  
         
         #residual water content
-        ptf_props$theta_r_rawls=pft.rawls(soilprop=soil_attributes, h=0, parameters="theta_r")[,"theta_r"]
+        ptf_props$theta_r=pft.rawls(soilprop=soil_attributes, h=0, parameters="theta_r")[,"theta_r"]
         
         #water content at field capacity (316 hPa / pF=2.6)
         ptf_props$theta_2.5=pft.rawls(soilprop=soil_attributes, h=316, parameters="theta")[,"theta"]
@@ -162,14 +159,14 @@ SoilParams<-function(catch, DEM, c){
         soil_sum2  = aggregate(x=soil_attributes, by=list(soil_id=getValues(soils)), FUN=mean, na.rm=TRUE) #aggregate according to soil_id
         soil_sum2$cellcount = table(getValues(soils))
         names(soil_sum2)[-1]=paste0(soillayer, names(soil_sum2)[-1]) #adjust column names
-        soil_sum = merge(soil_sum, soil_sum2, by="soil_id")
+        soil_sum = merge(soil_sum, soil_sum2) #by="soil_id"
         
         #aggregate properties from PTFs
         #ptf_props$soil_id[soil_attributes$alluvium==1]<-ptf_props$soil_id[soil_attributes$alluvium==1]+1000
         soil_sum2 = aggregate(x=ptf_props, by=list(soil_id=getValues(soils)), FUN=mean, na.rm=TRUE) #aggregate according to soil_id
         soil_sum2$nfk=soil_sum2$theta_2.5-soil_sum2$theta_r               #compute nfk
         names(soil_sum2)[-1]=paste0(soillayer, names(soil_sum2)[-1]) #adjust column names
-        soil_sum = merge(soil_sum, soil_sum2, by="soil_id")  
+        soil_sum = merge(soil_sum, soil_sum2) #by="soil_id"  
         write.table(x=soil_sum, file="soil_sum_recent.txt", sep="\t")
         rm(soil_sum2)
       }
@@ -227,12 +224,7 @@ SoilParams<-function(catch, DEM, c){
       hfields=intersect (paste0(soillayer, hor_fields), names(soil_sum) ) #fields to extract for current horizon
       oline=soil_sum[srow, hfields] #extract the current horizon
       oline=cbind(pid=hcounter, descr="", soil_id=soil_id, 
-                  position = ifelse(soillayer=="sl1", 1,
-                                    ifelse(soillayer == "sl2", 2,
-                                           ifelse(soillayer=="sl3", 3,
-                                                  ifelse(soillayer=="sl4", 4,
-                                                         ifelse(soillayer=="sl5",5,
-                                                                ifelse(soillayer=="sl6",6,7)))))),
+                  position = as.numeric(sub(soillayer,pattern = "sl", repl="")),
                   oline)
       
       write.table(file="horizons.txt", x=oline,
