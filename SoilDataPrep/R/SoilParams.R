@@ -1,11 +1,15 @@
-SoilParams<-function(catch, DEM, c){
+SoilParams<-function(catch, DEM, c, res_DEM){
   
   #devide study area into tiles
   h<-ceiling(ncol(DEM)/c) #number of horizontal tiles
   v<-ceiling(nrow(DEM)/c) #number of vertical tiles
   hcells<-ceiling(ncol(DEM)/h)
-  vcells<-ceiling(nrow(DEM)/v)  
-  print(paste("Number of tiles to calculate:", h, "x", v, "=", h*v)) 
+  vcells<-ceiling(nrow(DEM)/v) 
+  print(paste("Number of tiles to calculate:", h, "x", v, "=", h*v))
+  
+  #define factor to aggregate resolution of depth (from dem) to soilgrids
+  f_d<-floor(1000/res_DEM)
+  f_a<-floor(250/res_DEM)
   
   soil_sum_collected = NULL #for aggregation of results of single tiles
   
@@ -30,8 +34,8 @@ SoilParams<-function(catch, DEM, c){
       slope<-terrain(dem, opt="slope", unit="degrees", neighbors=8)
       
       #adjust raster resolution: d5,6 (1 km resolution) to DEM (90 m)
-      d5<-disaggregate(d5, fact=11)
-      d6<-disaggregate(d6, fact=11)
+      d5<-disaggregate(d5, fact=f_d)
+      d6<-disaggregate(d6, fact=f_d)
       d5<-resample(d5, dem, method="bilinear")
       d6<-resample(d6, dem, method="bilinear")
       rm(dem)
@@ -55,7 +59,7 @@ SoilParams<-function(catch, DEM, c){
       rm(depth_6)
       
       #adjust depth (90 m resolution) to SoilGrids (250 m)
-      depth<-aggregate(depth, fact=2)
+      depth<-aggregate(depth, fact=f_a)
       soils<-raster("SoilGrids/TAXNWRB.tif")
       soils<-crop(soils, depth)
       depth<-resample(depth, soils, method="bilinear")
@@ -177,14 +181,13 @@ SoilParams<-function(catch, DEM, c){
   
   #--------------------------------------------------------------------------------------
   soil_sum = soil_sum_collected #results of all tiles together
-  
   soil_means<- data.table(soil_sum)
   soil_means<- computeWeightedMeans(data_table=soil_means, weight=soil_means$sl7cellcount, by=soil_means$soil_id )
   soil_sum<-data.frame(soil_means)
   rm(soil_means)
   write.table(x=soil_sum, file="soil_sum_weighted.txt", sep=" \t")
   
-  # thickness [mm]####
+  #thickness [mm]
   soil_sum$sl1thickness = 25 
   soil_sum$sl2thickness = 75
   soil_sum$sl3thickness = 120
@@ -193,13 +196,14 @@ SoilParams<-function(catch, DEM, c){
   soil_sum$sl6thickness = 700
   soil_sum$sl7thickness = 500
   
-  soil_sum$sl1coarse = soil_sum$sl1coarse / 100 #convert % to [-]
-  soil_sum$sl2coarse = soil_sum$sl2coarse / 100 #convert % to [-]
-  soil_sum$sl3coarse= soil_sum$sl3coarse / 100
-  soil_sum$sl4coarse= soil_sum$sl4coarse / 100
-  soil_sum$sl5coarse= soil_sum$sl5coarse / 100
-  soil_sum$sl6coarse= soil_sum$sl6coarse / 100
-  soil_sum$sl7coarse= soil_sum$sl7coarse / 100
+  #convert unit of coarse from % to [-]
+  soil_sum$sl1coarse = soil_sum$sl1coarse / 100 
+  soil_sum$sl2coarse = soil_sum$sl2coarse / 100 
+  soil_sum$sl3coarse = soil_sum$sl3coarse / 100
+  soil_sum$sl4coarse = soil_sum$sl4coarse / 100
+  soil_sum$sl5coarse = soil_sum$sl5coarse / 100
+  soil_sum$sl6coarse = soil_sum$sl6coarse / 100
+  soil_sum$sl7coarse = soil_sum$sl7coarse / 100
   
   
   #prepare output files to be imported into make_wasa_db####
@@ -240,7 +244,6 @@ SoilParams<-function(catch, DEM, c){
   write.table(file="r_soil_contains_particles.txt", 
               x=data.frame(soil_id=soil_idss,pclass=pclass,frac=frac),
               sep="\t", quote=FALSE, row.names=FALSE, col.names=TRUE)
-  
   
   #for table particle_classes
   write.table(file="particle_classes.txt", 
