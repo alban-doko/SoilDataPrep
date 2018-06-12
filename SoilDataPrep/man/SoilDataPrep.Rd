@@ -14,8 +14,8 @@
 \packageIndices{
 GetDTB(catch)
 GetDTB(catch)
-SoilParams(catch, DEM, c)
-SoilParamsCont(catch, DEM, c)
+SoilParams(catch, DEM, c, res_DEM)
+SoilParamsCont(catch, DEM, c, res_DEM)
 }}
 
 \author{
@@ -48,5 +48,5 @@ GetDTB(catch)
 #Apply pedotransfer functions to the downloaded soil characteristics and prepare soil input tables for WASA:
 DEM<-??
 c<-500
-SoiParams(catch, DEM, c)
+SoiParams(catch, DEM, c, res_DEM)
 }
