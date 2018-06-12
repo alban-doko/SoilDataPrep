@@ -143,6 +143,10 @@ SoilParams<-function(catch, DEM, c, res_DEM){
         ptf_props$ks<- (10^(predict.ptf(newdata=euptf_attributes, ptf="PTF17")))*10
         
         #Calculate theta_s/2.5/1.8,s_f, h_b and lambda with ptf.rawls####  
+<<<<<<< HEAD
+=======
+        
+>>>>>>> a08d3a1f5cc6efed0732aae34c8db6ecd292f666
         #Residual water content
         ptf_props$theta_r=pft.rawls(soilprop=soil_attributes, h=0, parameters="theta_r")[,"theta_r"]
         
