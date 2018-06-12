@@ -8,9 +8,10 @@ Function to continue the extraction of soil parameters started with SoilParams a
 \usage{SoilParamsCont(catch, DEM, c)}
 
 \details{
-catch: shapefile of the catchment/study area, geographic coordinate system WGS1984 longlat, no projection
-DEM: 90x90m digital elevation model of the study area
-c: maximum number of cells in x and y direction for single tiles, e.g.1000}
+catch: shapefile of the catchment/study area, geographic coordinate system (gcs) WGS1984 longlat, no projection
+DEM: digital elevation model of the study area (raster), gcs WGS1984 longlat, no projection
+c: maximum number of cells in x and y direction for single tiles, e.g.1000
+res_DEM: resolution of the DEM in m, e.g. 90}
 
 \value{
 
