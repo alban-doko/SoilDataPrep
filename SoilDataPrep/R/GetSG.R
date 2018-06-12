@@ -2,6 +2,7 @@ GetSG<-
   function(catch){
   
     dir.create("SoilGrids")
+    data("sysdata", package="SoilDataPrep")
     
   for (i in 1:length(SG_layers)){ 
     
