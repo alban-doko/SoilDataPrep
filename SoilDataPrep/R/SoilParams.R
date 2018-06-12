@@ -1,33 +1,34 @@
 SoilParams<-function(catch, DEM, c, res_DEM){
   
-  #Crop DEM to the size of the bbox of the catchment
+  #Crop DEM to the size of the catchment's bbox
   DEM<-crop(DEM, bbox(catch))
   
-  #devide study area into tiles
+  #Divide study area into tiles
   h<-ceiling(ncol(DEM)/c) #number of horizontal tiles
   v<-ceiling(nrow(DEM)/c) #number of vertical tiles
   hcells<-ceiling(ncol(DEM)/h)
   vcells<-ceiling(nrow(DEM)/v) 
   print(paste("Number of tiles to calculate:", h, "x", v, "=", h*v))
   
-  #define factor to aggregate resolution of depth (from dem) to soilgrids
+  #Define factors to adapt different raster resolutions
   f_d<-floor(1000/res_DEM)
   f_a<-floor(250/res_DEM)
   
-  soil_sum_collected = NULL #for aggregation of results of single tiles
+  soil_sum_collected = NULL #aggregates results of single tiles
   
-  #start from the first tile:
+  #Start from the first tile####
+  
   for (a in 1:h){
     for(b in 1:v){
       
       write.table(x=data.frame("a"=a, "b"=b), file="last_tile.txt", row.names = F, sep=" \t")
       print(paste("Treating tile", a,b, Sys.time(), "Memory in use:", memory.size(max=F)))
       
-      #cut DEM to extent of current tile
+      #Crop DEM to extent of current tile
       dem<-crop(DEM, extent(DEM,((a-1)*hcells +1), a*hcells,((b-1)*vcells +1), b*vcells))    
       dem<-mask(x=dem, mask=catch) #set cells outside the catchment to NA
       
-      #jump tiles outside the catchment/study area
+      #Jump tiles outside the catchment/study area
       if(sum(is.na(getValues(dem)))==length(getValues(dem))) next
       
       d5<-raster("Pelletier_DTB/depth_5.tif")
@@ -36,19 +37,19 @@ SoilParams<-function(catch, DEM, c, res_DEM){
       d6<-crop(d6,dem)
       slope<-terrain(dem, opt="slope", unit="degrees", neighbors=8)
       
-      #adjust raster resolution: d5,6 (1 km resolution) to DEM (90 m)
+      #Adjust raster resolution: d5,6 (1 km resolution) to DEM
       d5<-disaggregate(d5, fact=f_d)
       d6<-disaggregate(d6, fact=f_d)
       d5<-resample(d5, dem, method="bilinear")
       d6<-resample(d6, dem, method="bilinear")
       rm(dem)
       
-      #create d5 cells
+      #Create d5 cells
       dfun<-function(slope){ifelse(slope>=20, 1,0)}
       depth_5<-calc(slope, fun=dfun)
       depth_5<-depth_5*d5
       
-      #create d6 cells
+      #Create d6 cells
       dfun<-function(slope){ifelse(slope<20, 1,0)}
       depth_6<-calc(slope, fun=dfun)
       depth_6<-depth_6*d6
@@ -56,12 +57,12 @@ SoilParams<-function(catch, DEM, c, res_DEM){
       rm(d5)
       rm(d6)
       
-      #depth=d5+d6
+      #Depth=d5+d6
       depth<- depth_5+depth_6
       rm(depth_5)
       rm(depth_6)
       
-      #adjust depth (90 m resolution) to SoilGrids (250 m)
+      #Adjust raster resolution: depth (=DEM resolution) to SoilGrids (250 m)
       depth<-aggregate(depth, fact=f_a)
       soils<-raster("SoilGrids/TAXNWRB.tif")
       soils<-crop(soils, depth)
@@ -71,8 +72,7 @@ SoilParams<-function(catch, DEM, c, res_DEM){
       afun<-function(depth){ifelse(depth>=3, 1,0)}
       aluvial<-calc(depth, fun=afun)
       
-      #unique(soils)
-      sfun<-function(aluvial){ifelse(aluvial==1,1000,0)}
+      sfun<-function(aluvial){ifelse(aluvial==1,1000,0)} #If alluvial flag soil_ids with +1000
       new<-calc(aluvial, fun=sfun)
       soils<-soils+new
       
@@ -82,7 +82,7 @@ SoilParams<-function(catch, DEM, c, res_DEM){
       rm(aluvial)
       rm(depth)
       
-      #apply PTFs to each horizon
+      #Apply PTFs to each horizon####
       for (soillayer in c("sl1", "sl2", "sl3", "sl4", "sl5", "sl6", "sl7"))
       {
         print(paste("- soillayer", soillayer, Sys.time(), "Memory in use:", memory.size(max=F)))
@@ -129,49 +129,49 @@ SoilParams<-function(catch, DEM, c, res_DEM){
         rm(ph)
         rm(cec)
         
-        #Calculate theta_r/pwp/_s and ks with euptf####
+        
+        #Calculate theta_r/pwp/_s and ks with {euptf}####
         ptf_props<-NULL
         
-        #water content at permanent wilting point (1500 kPa/15000 cm)
+        #Water content at permanent wilting point (1500 kPa/15000 cm)
         ptf_props=data.frame(theta_pwp = predict.ptf(newdata=euptf_attributes, ptf="PTF12"))
         
-        #saturated water content
+        #Saturated water content
         ptf_props$theta_s<- predict.ptf(newdata=euptf_attributes, ptf="PTF06")
         
-        #saturated hydraulic conductivity (horizons) [cm/d]    	
+        #Saturated hydraulic conductivity (horizons) [cm/d]    	
         ptf_props$ks<- (10^(predict.ptf(newdata=euptf_attributes, ptf="PTF17")))*10
         
         #Calculate theta_s/2.5/1.8,s_f, h_b and lambda with ptf.rawls####  
         
-        #residual water content
+        #Residual water content
         ptf_props$theta_r=pft.rawls(soilprop=soil_attributes, h=0, parameters="theta_r")[,"theta_r"]
         
-        #water content at field capacity (316 hPa / pF=2.6)
+        #Water content at field capacity (316 hPa / pF=2.6)
         ptf_props$theta_2.5=pft.rawls(soilprop=soil_attributes, h=316, parameters="theta")[,"theta"]
         
-        #water content at field capacity (63 hPa / pF=1.8)
+        #Water content at field capacity (63 hPa / pF=1.8)
         ptf_props$theta_1.8=pft.rawls(soilprop=soil_attributes, h=63, parameters="theta")[,"theta"]
         
-        #suction at the wetting front (horizons) [mm]
+        #Suction at the wetting front (horizons) [mm]
         ptf_props$S_f=pft.rawls(soilprop=soil_attributes, parameters="S_f")[,"S_f"]
         
-        #	bubbling pressure (horizons) [cm]
+        #Bubbling pressure (horizons) [cm]
         ptf_props$h_b = pft.rawls(soilprop=soil_attributes, parameters="h_b")[,"h_b"]
         
-        #pore-size-index		pore-size index (horizons) [-]
+        #Pore-size-index (horizons) [-]
         ptf_props$lambda = pft.rawls(soilprop=soil_attributes, parameters="lambda")[,"lambda"]
         
-        #aggregate properties from basic horizon input data
-        #soil_attributes$soil_id[soil_attributes$alluvium==1]<-soil_attributes$soil_id[soil_attributes$alluvium==1]+1000
+        
+        #Aggregate properties from basic horizon input data####
         soil_sum2  = aggregate(x=soil_attributes, by=list(soil_id=getValues(soils)), FUN=mean, na.rm=TRUE) #aggregate according to soil_id
         soil_sum2$cellcount = table(getValues(soils))
         names(soil_sum2)[-1]=paste0(soillayer, names(soil_sum2)[-1]) #adjust column names
         soil_sum = merge(soil_sum, soil_sum2) 
         
-        #aggregate properties from PTFs
-        #ptf_props$soil_id[soil_attributes$alluvium==1]<-ptf_props$soil_id[soil_attributes$alluvium==1]+1000
+        #Aggregate properties from PTFs####
         soil_sum2 = aggregate(x=ptf_props, by=list(soil_id=getValues(soils)), FUN=mean, na.rm=TRUE) #aggregate according to soil_id
-        soil_sum2$nfk=soil_sum2$theta_2.5-soil_sum2$theta_r               #compute nfk
+        soil_sum2$nfk=soil_sum2$theta_2.5-soil_sum2$theta_r          #compute nfk
         names(soil_sum2)[-1]=paste0(soillayer, names(soil_sum2)[-1]) #adjust column names
         soil_sum = merge(soil_sum, soil_sum2)   
         write.table(x=soil_sum, file="soil_sum_recent.txt", sep="\t")
@@ -190,7 +190,7 @@ SoilParams<-function(catch, DEM, c, res_DEM){
   rm(soil_means)
   write.table(x=soil_sum, file="soil_sum_weighted.txt", sep=" \t")
   
-  #thickness [mm]
+  #Thickness [mm]
   soil_sum$sl1thickness = 25 
   soil_sum$sl2thickness = 75
   soil_sum$sl3thickness = 120
@@ -199,7 +199,7 @@ SoilParams<-function(catch, DEM, c, res_DEM){
   soil_sum$sl6thickness = 700
   soil_sum$sl7thickness = 500
   
-  #convert unit of coarse from % to [-]
+  #Convert unit of coarse from % to [-]
   soil_sum$sl1coarse = soil_sum$sl1coarse / 100 
   soil_sum$sl2coarse = soil_sum$sl2coarse / 100 
   soil_sum$sl3coarse = soil_sum$sl3coarse / 100
@@ -209,12 +209,12 @@ SoilParams<-function(catch, DEM, c, res_DEM){
   soil_sum$sl7coarse = soil_sum$sl7coarse / 100
   
   
-  #prepare output files to be imported into make_wasa_db####
-  #for table soils
+  #Prepare output files to be imported into make_wasa_db####
+  #For table soils
   write.table(file="soils.txt", x=data.frame(pid=soil_sum$soil_id, desc="NA", bedrock=1, aluvial=soil_sum$aluvial, b_om=soil_sum$sl1om),
               sep="\t", quote=FALSE, row.names=FALSE)
   
-  #for table horizons
+  #For table horizons
   hor_fields=c("pid","descr","soil_id","position","theta_r", "theta_pwp", "theta_2.5", "theta_1.8", "nfk", "theta_s", "thickness", "ks", "S_f", "lambda", "h_b","coarse")
   write.table(file="horizons.txt", x=t(hor_fields),
               sep="\t", quote=FALSE, row.names=FALSE, col.names=FALSE)
@@ -238,7 +238,7 @@ SoilParams<-function(catch, DEM, c, res_DEM){
                   sep="\t", quote=FALSE, row.names=FALSE, col.names=FALSE, append=TRUE)
     }}
   
-  #for table r_soil_contains_particles (only topsoil is considered)  
+  #For table r_soil_contains_particles (only topsoil is considered)  
   soil_sum$sl1sand=100-(soil_sum$sl1silt+soil_sum$sl1clay)
   soil_idss=rep(soil_sum$soil_id, each=3)
   pclass  =rep(1:3, nrow(soil_sum))
@@ -248,7 +248,7 @@ SoilParams<-function(catch, DEM, c, res_DEM){
               x=data.frame(soil_id=soil_idss,pclass=pclass,frac=frac),
               sep="\t", quote=FALSE, row.names=FALSE, col.names=TRUE)
   
-  #for table particle_classes
+  #For table particle_classes
   write.table(file="particle_classes.txt", 
               x=data.frame(class_id=1:3,desc=c("clay","silt","sand"), upper_limit=c(0.002,0.05,2)),
               sep="\t", quote=FALSE, row.names=FALSE, col.names=TRUE)
