@@ -21,7 +21,7 @@ SoilParams<-function(catch, DEM, c, res_DEM){
       print(paste("Treating tile", a,b, Sys.time(), "Memory in use:", memory.size(max=F)))
       
       #cut DEM to extent of current tile
-      dem <- crop(DEM, extent(DEM, ((a-1)*hcells +1), a*hcells,((b-1)*vcells +1), b*vcells))    
+      dem <- extent(DEM,((a-1)*hcells +1), a*hcells,((b-1)*vcells +1), b*vcells)    
       dem<-mask(x=dem, mask=catch) #set cells outside the catchment to NA
       
       #jump tiles outside the catchment/study area
@@ -163,14 +163,14 @@ SoilParams<-function(catch, DEM, c, res_DEM){
         soil_sum2  = aggregate(x=soil_attributes, by=list(soil_id=getValues(soils)), FUN=mean, na.rm=TRUE) #aggregate according to soil_id
         soil_sum2$cellcount = table(getValues(soils))
         names(soil_sum2)[-1]=paste0(soillayer, names(soil_sum2)[-1]) #adjust column names
-        soil_sum = merge(soil_sum, soil_sum2) #by="soil_id"
+        soil_sum = merge(soil_sum, soil_sum2) 
         
         #aggregate properties from PTFs
         #ptf_props$soil_id[soil_attributes$alluvium==1]<-ptf_props$soil_id[soil_attributes$alluvium==1]+1000
         soil_sum2 = aggregate(x=ptf_props, by=list(soil_id=getValues(soils)), FUN=mean, na.rm=TRUE) #aggregate according to soil_id
         soil_sum2$nfk=soil_sum2$theta_2.5-soil_sum2$theta_r               #compute nfk
         names(soil_sum2)[-1]=paste0(soillayer, names(soil_sum2)[-1]) #adjust column names
-        soil_sum = merge(soil_sum, soil_sum2) #by="soil_id"  
+        soil_sum = merge(soil_sum, soil_sum2)   
         write.table(x=soil_sum, file="soil_sum_recent.txt", sep="\t")
         rm(soil_sum2)
       }

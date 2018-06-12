@@ -21,7 +21,7 @@ SoilParamsCont<-function(catch, DEM, c, res_DEM){
             print(paste("Treating tile", a,b, Sys.time(), "Memory in use:", memory.size(max=F)))
             
             #cut DEM to extent of current tile
-            dem <- crop(DEM, extent(DEM, ((a-1)*hcells +1), a*hcells,((b-1)*vcells +1), b*vcells))    
+            dem <- extent(DEM,((a-1)*hcells +1), a*hcells,((b-1)*vcells +1), b*vcells)    
             dem<-mask(x=dem, mask=catch) #set cells outside the catchment to NA
             
             #jump tiles outside the catchment/study area
