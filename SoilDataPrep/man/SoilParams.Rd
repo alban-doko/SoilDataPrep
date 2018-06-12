@@ -8,8 +8,8 @@ Function to treat the study area tile by tile. Slope is derivated from the DEM t
 \usage{SoilParams(catch, DEM, c, res_DEM)}
 
 \details{
-catch: shapefile of the catchment/study area, geographic coordinate system (gcs) WGS1984 longlat, no projection
-DEM: digital elevation model of the study area (raster), gcs WGS1984 longlat, no projection
+catch: shapefile of the catchment/study area, geographic coordinate system (gcs) WGS1984 longlat, no projection. Read the shapefile with readOGR().
+DEM: digital elevation model of the study area (raster), gcs WGS1984 longlat, no projection. Read the raster file with raster().
 c: maximum number of cells in x and y direction for single tiles, e.g.1000
 res_DEM: resolution of the DEM in m, e.g. 90}
 

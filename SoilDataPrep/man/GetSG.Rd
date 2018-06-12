@@ -6,7 +6,7 @@
 
 \usage{GetSG(catch)}
 
-\details{catch: shapefile of the catchment/study area, geographic coordinate system WGS1984 longlat, no projection}
+\details{catch: shapefile of the catchment/study area, geographic coordinate system WGS1984 longlat, no projection. Read the shapefile with readOGR().}
 
 \value{
 Returns 72 files in a new folder "SoilGrids" in your working directory: 
