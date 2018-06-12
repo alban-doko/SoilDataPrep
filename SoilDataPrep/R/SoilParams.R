@@ -1,5 +1,8 @@
 SoilParams<-function(catch, DEM, c, res_DEM){
   
+  #Crop DEM to the size of the bbox of the catchment
+  DEM<-crop(DEM, bbox(catch))
+  
   #devide study area into tiles
   h<-ceiling(ncol(DEM)/c) #number of horizontal tiles
   v<-ceiling(nrow(DEM)/c) #number of vertical tiles
@@ -21,11 +24,11 @@ SoilParams<-function(catch, DEM, c, res_DEM){
       print(paste("Treating tile", a,b, Sys.time(), "Memory in use:", memory.size(max=F)))
       
       #cut DEM to extent of current tile
-      dem <- extent(DEM,((a-1)*hcells +1), a*hcells,((b-1)*vcells +1), b*vcells)    
+      dem<-crop(dem, extent(dem,((a-1)*hcells +1), a*hcells,((b-1)*vcells +1), b*vcells))    
       dem<-mask(x=dem, mask=catch) #set cells outside the catchment to NA
       
       #jump tiles outside the catchment/study area
-      if (sum(is.na(getValues(dem)))==length(getValues(dem))) next
+      if(sum(is.na(getValues(dem)))==length(getValues(dem))) next
       
       d5<-raster("Pelletier_DTB/depth_5.tif")
       d5<-crop(d5,dem)
