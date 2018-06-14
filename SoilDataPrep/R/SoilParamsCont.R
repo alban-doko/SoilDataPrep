@@ -73,9 +73,11 @@ SoilParamsCont<-function(catch, DEM, c, res_DEM){
       afun<-function(depth){ifelse(depth>=3, 1,0)}
       aluvial<-calc(depth, fun=afun)
       
-      sfun<-function(aluvial){ifelse(aluvial==1,1000,0)} #If alluvial flag soil_ids with +1000
+      #Create new soil ids: if alluvial +1000
+      sfun<-function(aluvial){ifelse(aluvial==1,1000,0)} 
       new<-calc(aluvial, fun=sfun)
       soils<-soils+new
+      writeRaster(soils, file=paste("soils_", a,"_", b,".tif"))
       
       aluvial[is.na(aluvial)]=0 #mask NAs
       soil_sum = aggregate(x=data.frame(aluvial=getValues(aluvial), total_depth=getValues(depth)), by=list(soil_id=getValues(soils)), FUN=mean, na.rm=TRUE) #aggregate according to soil_id
