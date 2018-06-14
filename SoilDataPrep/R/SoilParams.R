@@ -4,11 +4,11 @@ SoilParams<-function(catch, DEM, c, res_DEM){
   DEM<-crop(DEM, bbox(catch))
   
   #Divide study area into tiles
-  h<-ceiling(ncol(DEM)/c) #number of horizontal tiles
   v<-ceiling(nrow(DEM)/c) #number of vertical tiles
-  hcells<-ceiling(ncol(DEM)/h)
+  h<-ceiling(ncol(DEM)/c) #number of horizontal tiles
   vcells<-ceiling(nrow(DEM)/v) 
-  print(paste("Number of tiles to calculate:", h, "x", v, "=", h*v))
+  hcells<-ceiling(ncol(DEM)/h)
+  print(paste("Number of tiles to calculate:", v, "x", h, "=", h*v))
   
   #Define factors to adapt different raster resolutions
   f_d<-floor(1000/res_DEM)
@@ -28,7 +28,7 @@ SoilParams<-function(catch, DEM, c, res_DEM){
       print(paste("Treating tile", a,b, Sys.time(), "Memory in use:", memory.size(max=F)))
       
       #Crop DEM to extent of current tile
-      dem<-crop(DEM, extent(DEM,((a-1)*hcells +1), a*hcells,((b-1)*vcells +1), b*vcells))    
+      dem<-crop(DEM, extent(DEM,((a-1)*vcells +1), a*vcells,((b-1)*hcells +1), b*hcells))    
       dem<-mask(x=dem, mask=catch) #set cells outside the catchment to NA
       
       #Jump tiles outside the catchment/study area
