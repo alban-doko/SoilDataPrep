@@ -15,7 +15,7 @@ SoilParams<-function(catch, DEM, c, res_DEM){
   f_a<-floor(250/res_DEM)
   
   #Create a folder to store map of new soil ids
-  dir.create("MapSoils")
+  dir.create("MapSoils", overwrite=T)
   
   soil_sum_collected = NULL #aggregates results of single tiles
   
