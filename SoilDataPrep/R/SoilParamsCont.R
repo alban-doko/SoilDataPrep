@@ -19,8 +19,8 @@ SoilParamsCont<-function(catch, DEM, c, res_DEM){
   #Start from last treated tile of former run
   start<-read.table("last_tile.txt", header=T)
   
-  for (a in start$a:h){
-    for (b in start$b:v){
+  for (a in start$a:v){
+    for (b in start$b:h){
       
       write.table(x=data.frame("a"=a, "b"=b), file="last_tile.txt", row.names = F, sep=" \t")
       print(paste("Treating tile", a,b, Sys.time(), "Memory in use:", memory.size(max=F)))

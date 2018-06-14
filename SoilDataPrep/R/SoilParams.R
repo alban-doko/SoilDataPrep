@@ -21,8 +21,8 @@ SoilParams<-function(catch, DEM, c, res_DEM){
   
   #Start from the first tile####
   
-  for (a in 1:h){
-    for(b in 1:v){
+  for (a in 1:v){
+    for(b in 1:h){
       
       write.table(x=data.frame("a"=a, "b"=b), file="last_tile.txt", row.names = F, sep=" \t")
       print(paste("Treating tile", a,b, Sys.time(), "Memory in use:", memory.size(max=F)))
