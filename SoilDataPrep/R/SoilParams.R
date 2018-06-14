@@ -14,6 +14,9 @@ SoilParams<-function(catch, DEM, c, res_DEM){
   f_d<-floor(1000/res_DEM)
   f_a<-floor(250/res_DEM)
   
+  #Create a folder to store map of new soil ids
+  dir.create("MapSoils")
+  
   soil_sum_collected = NULL #aggregates results of single tiles
   
   #Start from the first tile####
@@ -76,7 +79,7 @@ SoilParams<-function(catch, DEM, c, res_DEM){
       sfun<-function(aluvial){ifelse(aluvial==1,1000,0)} 
       new<-calc(aluvial, fun=sfun)
       soils<-soils+new
-      writeRaster(soils, file=paste("soils_", a,"_", b,".tif"))
+      writeRaster(soils, file=paste("MapSoils/soils_", a,"_", b,".tif"))
       
       aluvial[is.na(aluvial)]=0 #mask NAs
       soil_sum = aggregate(x=data.frame(aluvial=getValues(aluvial), total_depth=getValues(depth)), by=list(soil_id=getValues(soils)), FUN=mean, na.rm=TRUE) #aggregate according to soil_id
