@@ -254,6 +254,19 @@ SoilParamsCont<-function(catch, DEM, c, res_DEM){
   write.table(file="particle_classes.txt", 
               x=data.frame(class_id=1:3,desc=c("clay","silt","sand"), upper_limit=c(0.002,0.05,2)),
               sep="\t", quote=FALSE, row.names=FALSE, col.names=TRUE)
+  
+  
+  #Create output map####
+  #read in all soil id maps, with new soil ids for alluvium and merge them to one map
+  
+  l_soils<-list()
+  x<-list.files("MapSoils")
+  for (i in 1:length(x)){
+    l_soils[i]<-raster(paste0("MapSoils/",x[i]))
+  }
+  
+  m_soils<-do.call(merge, l_soils)
+  writeRaster(m_soils, file="Mapsoils/soils_catchment.tif")
 }
 
     
