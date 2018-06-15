@@ -4,6 +4,10 @@ GetSG<-
     dir.create("SoilGrids")
     data("sysdata", package="SoilDataPrep")
     
+    #Adjust catchment projection to WGS84 longlat
+    wgs<-"+proj=longlat +datum=WGS84 +ellps=WGS84 +towgs84=0,0,0"
+    catch <- spTransform(catch, wgs)
+    
   for (i in 1:length(SG_layers)){ 
     
     url<- paste0("http://85.214.241.121:8080/geoserver/ows?service=WCS&version=2.0.1&request=GetCoverage&CoverageId=",
