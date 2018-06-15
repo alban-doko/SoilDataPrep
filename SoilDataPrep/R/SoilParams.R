@@ -273,7 +273,11 @@ SoilParams<-function(catch, DEM, c){
   for (i in 1:length(x)){
     l_soils[[i]]<-raster(paste0("MapSoils/",x[i]))}
   
-  m_soils<-do.call(merge, l_soils)
+  m_soils<-l_soils[[1]]
+  for (i in 2:length(l_soils)){
+    m_soils<-merge(l_soils[[i]],m_soils)}
+  
+  #m_soils<-do.call(merge, l_soils)
   writeRaster(m_soils, file="Mapsoils/soils_catchment.tif", overwrite=T)
 
   }
