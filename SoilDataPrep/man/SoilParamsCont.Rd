@@ -8,7 +8,7 @@ Function to continue the extraction of soil parameters started with SoilParams a
 \usage{SoilParamsCont(catch, DEM, c)}
 
 \details{
-catch: shapefile of the catchment/study area, geographic coordinate system (gcs) WGS1984 longlat, no projection. Read the shapefile with readOGR().
+catch: shapefile of the catchment/study area, different projections are accepted. Read the shapefile with readOGR().
 DEM: digital elevation model of the study area (raster), gcs WGS1984 longlat, no projection. Read the raster file with raster().
 c: maximum number of cells in x and y direction for single tiles, e.g.1000
 res_DEM: resolution of the DEM in m, e.g. 90}
@@ -19,6 +19,7 @@ res_DEM: resolution of the DEM in m, e.g. 90}
 \item{soil_sum_recent}{Shows the results of the last calculated tile}
 \item{soil_sum_collected}{Results of all treated tiles together}
 \item{soil_sum_weighted}{The final result of all tiles: mean values for each soil_id, weighted due to the number of occurrence}
+\item{Mapsoils/soils_catchment.tif}{Map with the new soil ids, to ids with alluvium 1000 was added}
 
 Input tables for WASA:
 \item{particle_classes}{Definition of particle classes}

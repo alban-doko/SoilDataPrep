@@ -1,5 +1,9 @@
 SoilParams<-function(catch, DEM, c, res_DEM){
   
+  #Adjust catchment projection to WGS84 longlat
+  wgs<-"+proj=longlat +datum=WGS84 +ellps=WGS84 +towgs84=0,0,0"
+  catch <- spTransform(catch, wgs)
+  
   #Crop DEM to the size of the catchment's bbox
   DEM<-crop(DEM, bbox(catch))
   
@@ -263,9 +267,9 @@ SoilParams<-function(catch, DEM, c, res_DEM){
   
   l_soils<-list()
   x<-list.files("MapSoils")
+  
   for (i in 1:length(x)){
-    l_soils[i]<-raster(paste0("MapSoils/",x[i]))
-  }
+    l_soils[i]<-raster(paste0("MapSoils/",x[i]))}
   
   m_soils<-do.call(merge, l_soils)
   writeRaster(m_soils, file="Mapsoils/soils_catchment.tif")
