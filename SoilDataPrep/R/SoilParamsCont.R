@@ -15,8 +15,10 @@ SoilParamsCont<-function(catch, DEM, c, res_DEM){
   print(paste("Number of tiles to calculate:", v, "x", h, "=", h*v))
   
   #Define factors to adapt different raster resolutions
-  f_d<-floor(1000/res_DEM)
-  f_a<-floor(250/res_DEM)
+  f_d<-floor(0.008333333/res(DEM)[1])
+  f_a<-floor(0.002083333/res(DEM)[1])
+  # f_d<-floor(1000/res_DEM)
+  # f_a<-floor(250/res_DEM)
   
   soil_sum_collected<-read.table("soil_sum_collected.txt") #results of former run, to aggregate all results
   
@@ -267,7 +269,7 @@ SoilParamsCont<-function(catch, DEM, c, res_DEM){
   x<-list.files("MapSoils")
   
   for (i in 1:length(x)){
-    l_soils[[i]]<-raster(paste0("MapSoils/",x[i]))}
+    l_soils[[i]]<-raster(paste0("MapSoils/",x[[i]]))}
   
   m_soils<-do.call(merge, l_soils)
   writeRaster(m_soils, file="Mapsoils/soils_catchment.tif")
