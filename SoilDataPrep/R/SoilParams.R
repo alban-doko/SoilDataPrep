@@ -17,8 +17,6 @@ SoilParams<-function(catch, DEM, c){
   #Define factors to adapt different raster resolutions
   f_d<-floor(0.008333333/res(DEM)[1])
   f_a<-floor(0.002083333/res(DEM)[1])
-  # f_d<-floor(1000/res_DEM)
-  # f_a<-floor(250/res_DEM)
   
   #Create a folder to store map of new soil ids
   dir.create("MapSoils")
@@ -265,19 +263,13 @@ SoilParams<-function(catch, DEM, c){
   
   
   #Create output map####
-  #read in all soil id maps, with new soil ids for alluvium and merge them to one map
+  #Read in all soil id maps, with new soil ids for alluvium and then merge them to one map
   
   l_soils<-list()
   x<-list.files("MapSoils")
-  
   for (i in 1:length(x)){
     l_soils[[i]]<-raster(paste0("MapSoils/",x[i]))}
-  
-  m_soils<-l_soils[[1]]
-  for (i in 2:length(l_soils)){
-    m_soils<-merge(l_soils[[i]],m_soils)}
-  
-  #m_soils<-do.call(merge, l_soils)
+  m_soils<-do.call(raster::merge, l_soils)
   writeRaster(m_soils, file="Mapsoils/soils_catchment.tif", overwrite=T)
 
-  }
+}
