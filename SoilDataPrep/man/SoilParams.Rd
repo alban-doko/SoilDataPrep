@@ -10,7 +10,7 @@ Function to treat the study area tile by tile. Slope is derivated from the DEM t
 \details{
 catch: shapefile of the catchment/study area, different projections are accepted. Read the shapefile with readOGR().
 DEM: digital elevation model of the study area (raster), gcs WGS1984 longlat, no projection. Read the raster file with raster().
-c: maximum number of cells in x and y direction for single tiles, e.g.1000}
+c: maximum number of cells in x and y direction for single tiles, e.g. 500}
 
 \value{
 
