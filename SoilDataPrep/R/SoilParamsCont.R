@@ -20,11 +20,11 @@ SoilParamsCont<-function(catch, DEM, c=500){
   
   soil_sum_collected<-read.table("soil_sum_collected.txt") #results of former run, to aggregate all results
   
-  #Start from last treated tile of former run
+  #Start from last treated a of former run
   start<-read.table("last_tile.txt", header=T)
   
   for (a in start$a:v){
-    for (b in start$b:h){
+    for (b in 1:h){
       
       write.table(x=data.frame("a"=a, "b"=b), file="last_tile.txt", row.names = F, sep=" \t")
       print(paste("Treating tile", a,b, Sys.time(), "Memory in use:", memory.size(max=F)))
@@ -181,6 +181,7 @@ SoilParamsCont<-function(catch, DEM, c=500){
         soil_sum2$tile_b= b
         names(soil_sum2)[-1]=paste0(soillayer, names(soil_sum2)[-1]) #adjust column names
         soil_sum = merge(soil_sum, soil_sum2) 
+        soil_sum <- unique(soil_sum)
         
         #Aggregate properties from PTFs####
         soil_sum2 = aggregate(x=ptf_props, by=list(soil_id=getValues(soils)), FUN=mean, na.rm=TRUE) #aggregate according to soil_id
