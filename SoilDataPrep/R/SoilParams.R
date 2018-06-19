@@ -179,6 +179,8 @@ SoilParams<-function(catch, DEM, c=500){
         #Aggregate properties from basic horizon input data####
         soil_sum2  = aggregate(x=soil_attributes, by=list(soil_id=getValues(soils)), FUN=mean, na.rm=TRUE) #aggregate according to soil_id
         soil_sum2$cellcount = table(getValues(soils))
+        soil_sum2$tile_a= a
+        soil_sum2$tile_b= b
         names(soil_sum2)[-1]=paste0(soillayer, names(soil_sum2)[-1]) #adjust column names
         soil_sum = merge(soil_sum, soil_sum2) 
         
