@@ -91,6 +91,11 @@ SoilParams<-function(catch, DEM, c=500){
       rm(aluvial)
       rm(depth)
       
+      #Make sure that depth values are never negative
+      for (di in 1:length(soil_sum$depth)){
+      if(soil_sum$depth[di] <0)
+        warning(paste("For tile no. ", a, b, di,": Depth values < 0 appear!"))}
+      
       #Apply PTFs to each horizon####
       for (soillayer in c("sl1", "sl2", "sl3", "sl4", "sl5", "sl6", "sl7"))
       {
