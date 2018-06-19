@@ -91,7 +91,7 @@ SoilParams<-function(catch, DEM, c=500){
       rm(aluvial)
       rm(depth)
       
-      #Make sure that depth values are never negative
+      #Warning if there are negative depth values
       for (di in 1:length(soil_sum$depth)){
       if(soil_sum$depth[di] <0)
         warning(paste("For tile no. ", a, b, di,": Depth values < 0 appear!"))}

@@ -89,7 +89,7 @@ SoilParamsCont<-function(catch, DEM, c=500){
       rm(aluvial)
       rm(depth)
       
-      #Make sure that depth values are never negative
+      #Warning if there are negative depth values
       for (di in 1:length(soil_sum$depth)){
         if(soil_sum$depth[di] <0)
           warning(paste("For tile no. ", a, b, di,": Depth values < 0 appear!"))}
@@ -177,6 +177,8 @@ SoilParamsCont<-function(catch, DEM, c=500){
         #Aggregate properties from basic horizon input data####
         soil_sum2  = aggregate(x=soil_attributes, by=list(soil_id=getValues(soils)), FUN=mean, na.rm=TRUE) #aggregate according to soil_id
         soil_sum2$cellcount = table(getValues(soils))
+        soil_sum2$tile_a= a
+        soil_sum2$tile_b= b
         names(soil_sum2)[-1]=paste0(soillayer, names(soil_sum2)[-1]) #adjust column names
         soil_sum = merge(soil_sum, soil_sum2) 
         
