@@ -1,4 +1,4 @@
-SoilParams<-function(catch, DEM, c=500){
+SoilParams<-function(catch, DEM, c=1000){
   
   #Adjust catchment projection to WGS84 longlat
   wgs<-"+proj=longlat +datum=WGS84 +ellps=WGS84 +towgs84=0,0,0"

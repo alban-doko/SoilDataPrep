@@ -14,8 +14,8 @@
 \packageIndices{
 GetDTB(catch)
 GetDTB(catch)
-SoilParams(catch, DEM, c, res_DEM)
-SoilParamsCont(catch, DEM, c, res_DEM)
+SoilParams(catch, DEM, c=1000)
+SoilParamsCont(catch, DEM, c=1000)
 }}
 
 \author{
