@@ -37,10 +37,10 @@ SoilParamsCont<-function(catch, DEM, c=500){
       if(sum(is.na(getValues(dem)))==length(getValues(dem))) next
       
       d5<-raster("Pelletier_DTB/depth_5.tif")
-      d5<-crop(d5,dem)
+      d5<-crop(d5,dem, snap="out")
       d5[d5<=0]<-NA
       d6<-raster("Pelletier_DTB/depth_6.tif")
-      d6<-crop(d6,dem)
+      d6<-crop(d6,dem, snap="out")
       d6[d6<=0]<-NA
       slope<-terrain(dem, opt="slope", unit="degrees", neighbors=8)
       
@@ -72,7 +72,7 @@ SoilParamsCont<-function(catch, DEM, c=500){
       #Adjust raster resolution: depth (=DEM resolution) to SoilGrids (250 m)
       depth<-aggregate(depth, fact=f_a)
       soils<-raster("SoilGrids/TAXNWRB.tif")
-      soils<-crop(soils, depth)
+      soils<-crop(soils, depth, crop="out")
       depth<-resample(depth, soils, method="bilinear")
       
       #Aluvial
