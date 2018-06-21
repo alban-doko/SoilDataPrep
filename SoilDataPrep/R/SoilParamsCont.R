@@ -38,8 +38,10 @@ SoilParamsCont<-function(catch, DEM, c=500){
       
       d5<-raster("Pelletier_DTB/depth_5.tif")
       d5<-crop(d5,dem)
+      d5[d5<=0]<-NA
       d6<-raster("Pelletier_DTB/depth_6.tif")
       d6<-crop(d6,dem)
+      d6[d6<=0]<-NA
       slope<-terrain(dem, opt="slope", unit="degrees", neighbors=8)
       
       #Adjust raster resolution: d5,6 (1 km resolution) to DEM
