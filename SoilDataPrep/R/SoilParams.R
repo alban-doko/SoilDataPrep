@@ -153,24 +153,24 @@ SoilParams<-function(catch, DEM, c=1000){
         #Saturated hydraulic conductivity (horizons) [cm/d]    	
         ptf_props$ks<- (10^(predict.ptf(newdata=euptf_attributes, ptf="PTF17")))*10
         
-        #Calculate theta_s/2.5/1.8,s_f, h_b and lambda with ptf.rawls####  
+        #Calculate theta_s/2.5/1.8,suction, h_b and lambda with ptf.rawls####  
         #Residual water content
         ptf_props$theta_r=pft.rawls(soilprop=soil_attributes, h=0, parameters="theta_r")[,"theta_r"]
         
         #Water content at field capacity (316 hPa / pF=2.6)
-        ptf_props$theta_2.5=pft.rawls(soilprop=soil_attributes, h=316, parameters="theta")[,"theta"]
+        ptf_props$fk=pft.rawls(soilprop=soil_attributes, h=316, parameters="theta")[,"theta"]
         
         #Water content at field capacity (63 hPa / pF=1.8)
-        ptf_props$theta_1.8=pft.rawls(soilprop=soil_attributes, h=63, parameters="theta")[,"theta"]
+        ptf_props$fk63=pft.rawls(soilprop=soil_attributes, h=63, parameters="theta")[,"theta"]
         
         #Suction at the wetting front (horizons) [mm]
-        ptf_props$S_f=pft.rawls(soilprop=soil_attributes, parameters="S_f")[,"S_f"]
+        ptf_props$suction=pft.rawls(soilprop=soil_attributes, parameters="suction")[,"suction"]
         
         #Bubbling pressure (horizons) [cm]
-        ptf_props$h_b = pft.rawls(soilprop=soil_attributes, parameters="h_b")[,"h_b"]
+        ptf_props$bubb_pres = pft.rawls(soilprop=soil_attributes, parameters="h_b")[,"h_b"]
         
-        #Pore-size-index (horizons) [-]
-        ptf_props$lambda = pft.rawls(soilprop=soil_attributes, parameters="lambda")[,"lambda"]
+        #Pore-size-index lambda (horizons) [-]
+        ptf_props$pore_size_i = pft.rawls(soilprop=soil_attributes, parameters="lambda")[,"lambda"]
         
         
         #Aggregate properties from basic horizon input data####
@@ -183,7 +183,7 @@ SoilParams<-function(catch, DEM, c=1000){
         
         #Aggregate properties from PTFs####
         soil_sum2 = aggregate(x=ptf_props, by=list(soil_id=getValues(soils)), FUN=mean, na.rm=TRUE) #aggregate according to soil_id
-        soil_sum2$nfk=soil_sum2$theta_2.5-soil_sum2$theta_r          #compute nfk
+        soil_sum2$nfk=soil_sum2$fk-soil_sum2$theta_r          #compute nfk
         names(soil_sum2)[-1]=paste0(soillayer, names(soil_sum2)[-1]) #adjust column names
         soil_sum = merge(soil_sum, soil_sum2)   
         write.table(x=soil_sum, file="soil_sum_recent.txt", sep="\t")
@@ -223,11 +223,11 @@ SoilParams<-function(catch, DEM, c=1000){
   
   #Prepare output files to be imported into make_wasa_db####
   #For table soils
-  write.table(file="soil.dat", x=data.frame(pid=soil_sum$soil_id, desc="NA", bedrock_flag=1, alluvial=soil_sum$alluvial, b_om=soil_sum$sl1om),
+  write.table(file="soil.dat", x=data.frame(pid=soil_sum$soil_id, description="NA", bedrock_flag=1, alluvial=soil_sum$alluvial, b_om=soil_sum$sl1om),
               sep="\t", quote=FALSE, row.names=FALSE)
   
   #For table horizons
-  hor_fields=c("pid","descr","soil_id","position","theta_r", "theta_pwp", "theta_2.5", "theta_1.8", "nfk", "theta_s", "thickness", "ks", "S_f", "lambda", "h_b","coarse")
+  hor_fields=c("pid","description","soil_id","position","theta_r", "theta_pwp", "fk", "fk63", "nfk", "theta_s", "thickness", "ks", "suction", "pore_size_i", "bubb_pres","coarse_frag")
   write.table(file="horizons.dat", x=t(hor_fields),
               sep="\t", quote=FALSE, row.names=FALSE, col.names=FALSE)
   
@@ -242,7 +242,7 @@ SoilParams<-function(catch, DEM, c=1000){
       
       hfields=intersect (paste0(soillayer, hor_fields), names(soil_sum) ) #fields to extract for current horizon
       oline=soil_sum[srow, hfields] #extract the current horizon
-      oline=cbind(pid=hcounter, descr="", soil_id=soil_id, 
+      oline=cbind(pid=hcounter, description="", soil_id=soil_id, 
                   position = as.numeric(sub(soillayer,pattern = "sl", repl="")),
                   oline)
       
@@ -253,16 +253,16 @@ SoilParams<-function(catch, DEM, c=1000){
   #For table r_soil_contains_particles (only topsoil is considered)  
   soil_sum$sl1sand=100-(soil_sum$sl1silt+soil_sum$sl1clay)
   soil_idss=rep(soil_sum$soil_id, each=3)
-  pclass  =rep(1:3, nrow(soil_sum))
+  class_id  =rep(1:3, nrow(soil_sum))
   tt=matrix(c(soil_sum$sl1clay, soil_sum$sl1silt,soil_sum$sl1sand)/100, nrow=length(soil_sum$sl1clay))
   frac    =as.vector(t(tt))
   write.table(file="r_soil_contains_particles.dat", 
-              x=data.frame(soil_id=soil_idss,pclass=pclass,frac=frac),
+              x=data.frame(soil_id=soil_idss,class_id=class_id,fraction=frac),
               sep="\t", quote=FALSE, row.names=FALSE, col.names=TRUE)
   
   #For table particle_classes
   write.table(file="particle_classes.dat", 
-              x=data.frame(class_id=1:3,desc=c("clay","silt","sand"), upper_limit=c(0.002,0.05,2)),
+              x=data.frame(class_id=1:3,description=c("clay","silt","sand"), upper_limit=c(0.002,0.05,2)),
               sep="\t", quote=FALSE, row.names=FALSE, col.names=TRUE)
   
   
