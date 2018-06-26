@@ -75,20 +75,20 @@ SoilParamsCont<-function(catch, DEM, c=1000){
       soils<-crop(soils, depth, crop="out")
       depth<-resample(depth, soils, method="bilinear")
       
-      #Aluvial
+      #alluvial
       afun<-function(depth){ifelse(depth>=3, 1,0)}
-      aluvial<-calc(depth, fun=afun)
+      alluvial<-calc(depth, fun=afun)
       
       #Create new soil ids: if alluvial +1000
-      sfun<-function(aluvial){ifelse(aluvial==1,1000,0)} 
-      new<-calc(aluvial, fun=sfun)
+      sfun<-function(alluvial){ifelse(alluvial==1,1000,0)} 
+      new<-calc(alluvial, fun=sfun)
       soils<-soils+new
       writeRaster(soils, file=paste0("MapSoils/soils_", a,"_", b,".tif"), overwrite=T)
       
-      aluvial[is.na(aluvial)]=0 #mask NAs
-      soil_sum = aggregate(x=data.frame(aluvial=getValues(aluvial), total_depth=getValues(depth)), by=list(soil_id=getValues(soils)), FUN=mean, na.rm=TRUE) #aggregate according to soil_id
-      names(soil_sum)[-1]=c("aluvial","depth")
-      rm(aluvial)
+      alluvial[is.na(alluvial)]=0 #mask NAs
+      soil_sum = aggregate(x=data.frame(alluvial=getValues(alluvial), total_depth=getValues(depth)), by=list(soil_id=getValues(soils)), FUN=mean, na.rm=TRUE) #aggregate according to soil_id
+      names(soil_sum)[-1]=c("alluvial_flag","depth")
+      rm(alluvial)
       rm(depth)
       
       #Apply PTFs to each horizon####
@@ -222,7 +222,7 @@ SoilParamsCont<-function(catch, DEM, c=1000){
   
   #Prepare output files to be imported into make_wasa_db####
   #For table soils
-  write.table(file="soil.dat", x=data.frame(pid=soil_sum$soil_id, desc="NA", bedrock=1, aluvial=soil_sum$aluvial, b_om=soil_sum$sl1om),
+  write.table(file="soil.dat", x=data.frame(pid=soil_sum$soil_id, desc="NA", bedrock_flag=1, alluvial=soil_sum$alluvial, b_om=soil_sum$sl1om),
               sep="\t", quote=FALSE, row.names=FALSE)
   
   #For table horizons
