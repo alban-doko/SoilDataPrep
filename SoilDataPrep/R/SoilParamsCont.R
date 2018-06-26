@@ -222,7 +222,7 @@ SoilParamsCont<-function(catch, DEM, c=1000){
   
   #Prepare output files to be imported into make_wasa_db####
   #For table soils
-  write.table(file="soils.txt", x=data.frame(pid=soil_sum$soil_id, desc="NA", bedrock=1, aluvial=soil_sum$aluvial, b_om=soil_sum$sl1om),
+  write.table(file="soil.dat", x=data.frame(pid=soil_sum$soil_id, desc="NA", bedrock=1, aluvial=soil_sum$aluvial, b_om=soil_sum$sl1om),
               sep="\t", quote=FALSE, row.names=FALSE)
   
   #For table horizons
