@@ -227,7 +227,7 @@ SoilParamsCont<-function(catch, DEM, c=1000){
   
   #For table horizons
   hor_fields=c("pid","descr","soil_id","position","theta_r", "theta_pwp", "theta_2.5", "theta_1.8", "nfk", "theta_s", "thickness", "ks", "S_f", "lambda", "h_b","coarse")
-  write.table(file="horizons.txt", x=t(hor_fields),
+  write.table(file="horizons.dat", x=t(hor_fields),
               sep="\t", quote=FALSE, row.names=FALSE, col.names=FALSE)
   
   hcounter=0 #horizon counter
@@ -245,7 +245,7 @@ SoilParamsCont<-function(catch, DEM, c=1000){
                   position = as.numeric(sub(soillayer,pattern = "sl", repl="")),
                   oline)
       
-      write.table(file="horizons.txt", x=oline,
+      write.table(file="horizons.dat", x=oline,
                   sep="\t", quote=FALSE, row.names=FALSE, col.names=FALSE, append=TRUE)
     }}
   
@@ -255,12 +255,12 @@ SoilParamsCont<-function(catch, DEM, c=1000){
   pclass  =rep(1:3, nrow(soil_sum))
   tt=matrix(c(soil_sum$sl1clay, soil_sum$sl1silt,soil_sum$sl1sand)/100, nrow=length(soil_sum$sl1clay))
   frac    =as.vector(t(tt))
-  write.table(file="r_soil_contains_particles.txt", 
+  write.table(file="r_soil_contains_particles.dat", 
               x=data.frame(soil_id=soil_idss,pclass=pclass,frac=frac),
               sep="\t", quote=FALSE, row.names=FALSE, col.names=TRUE)
   
   #For table particle_classes
-  write.table(file="particle_classes.txt", 
+  write.table(file="particle_classes.dat", 
               x=data.frame(class_id=1:3,desc=c("clay","silt","sand"), upper_limit=c(0.002,0.05,2)),
               sep="\t", quote=FALSE, row.names=FALSE, col.names=TRUE)
   
