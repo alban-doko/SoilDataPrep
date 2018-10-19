@@ -269,10 +269,11 @@ SoilParams<-function(catch, DEM, c=1000){
   #Create output map####
   #Read in all soil id maps, with new soil ids for alluvium and then merge them to one map
   
+  
   l_soils<-list()
-  x<-list.files("MapSoils")
+  x<-list.files("MapSoils", pattern="^soils_[0-9].*\\.tif$") #avoid reading in an old merged map or other files
   for (i in 1:length(x)){
-    l_soils[[i]]<-raster(paste0("MapSoils/",x[i]))}
+  l_soils[[i]]<-raster(paste0("MapSoils/",x[i]))}
   m_soils<-do.call(raster::merge, l_soils)
   writeRaster(m_soils, file="Mapsoils/soils_catchment.tif", overwrite=T)
 
