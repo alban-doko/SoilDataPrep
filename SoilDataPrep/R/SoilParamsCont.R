@@ -72,7 +72,7 @@ SoilParamsCont<-function(catch, DEM, c=1000){
       #Adjust raster resolution: depth (=DEM resolution) to SoilGrids (250 m)
       depth<-aggregate(depth, fact=f_a)
       soils<-raster("SoilGrids/TAXNWRB.tif")
-      soils<-crop(soils, depth, crop="out")
+      soils<-crop(soils, depth, snap="out")
       depth<-resample(depth, soils, method="bilinear")
       
       #alluvial
@@ -165,9 +165,9 @@ SoilParamsCont<-function(catch, DEM, c=1000){
         ptf_props$suction=pft.rawls(soilprop=soil_attributes, parameters="suction")[,"suction"]
         
         #Bubbling pressure (horizons) [cm]
-        ptf_props$h_b = pft.rawls(soilprop=soil_attributes, parameters="h_b")[,"h_b"]
+        ptf_props$bubb_pres = pft.rawls(soilprop=soil_attributes, parameters="h_b")[,"h_b"]
         
-        #Pore-size-index (horizons) [-]
+        #Pore-size-index lambda (horizons) [-]
         ptf_props$pore_size_i = pft.rawls(soilprop=soil_attributes, parameters="lambda")[,"lambda"]
         
         
