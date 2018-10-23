@@ -1,11 +1,19 @@
 SoilParams<-function(catch, DEM, c=1000){
   
   #Adjust catchment projection to WGS84 longlat
+  print("reprojecting maps...")
   wgs<-"+proj=longlat +datum=WGS84 +ellps=WGS84 +towgs84=0,0,0"
   catch <- spTransform(catch, wgs)
   
+  if (projection(DEM)==projection(catch)) #only do reprojection if necessary 
+    DEM_latlon =DEM else
+    DEM_latlon <- projectRaster(DEM, crs = wgs)   #takes some time
+  print("reprojecting done.")
+  
+
   #Crop DEM to the size of the catchment's bbox
-  DEM<-crop(DEM, bbox(catch))
+  DEM<-crop(DEM_latlon, bbox(catch))
+  
   
   #Divide study area into tiles
   v<-ceiling(nrow(DEM)/c) #number of vertical tiles

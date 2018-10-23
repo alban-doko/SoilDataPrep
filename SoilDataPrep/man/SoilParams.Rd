@@ -7,10 +7,10 @@ Function to treat the study area tile by tile. Slope is derivated from the DEM t
 
 \usage{SoilParams(catch, DEM, c=1000)}
 
-\details{
-catch: shapefile of the catchment/study area, different projections are accepted. Read the shapefile with readOGR().
-DEM: digital elevation model of the study area (raster), gcs WGS1984 longlat, no projection. Read the raster file with raster().
-c: maximum number of cells in x and y direction for single tiles, default is set to 1000}
+\arguments{
+\item{catch} shapefile of the catchment/study area, different projections are accepted. Read the shapefile with readOGR().
+\item{DEM} digital elevation model of the study area (raster), different projections are accepted, using gcs WGS1984 longlat may save some time. Read the raster file with raster().
+\item{c} maximum number of cells in x and y direction for single tiles, default is set to 1000}
 
 \value{
 
@@ -25,8 +25,8 @@ Input tables for WASA:
 \item{r_soil_contains_particles}{Fraction of each particle class for each soil_id, only topsoil is considered}
 \item{horizons}{Describes each horizon of each soil_id}
 \item{soils}{Bedrock, alluvium and organic matter content for each soil_id}
-
 }
+
 \references{
 %% ~put references to the literature/web site here ~
 }
