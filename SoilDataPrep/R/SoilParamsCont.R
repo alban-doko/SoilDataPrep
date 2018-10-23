@@ -1,4 +1,4 @@
-SoilParams<-function(catch, DEM, c=1000){
+SoilParamsCont<-function(catch, DEM, c=1000){
   
   #Adjust catchment projection to WGS84 longlat
   wgs<-"+proj=longlat +datum=WGS84 +ellps=WGS84 +towgs84=0,0,0"
@@ -38,7 +38,11 @@ SoilParams<-function(catch, DEM, c=1000){
       dem<-mask(x=dem, mask=catch) #set cells outside the catchment to NA
       
       #Jump tiles outside the catchment/study area
-      if(sum(is.na(getValues(dem)))==length(getValues(dem))) next
+      if(sum(is.na(getValues(dem)))==length(getValues(dem))) 
+      {
+        print("empty tile, skipped.")
+        next
+      }  
       
       d5<-raster("Pelletier_DTB/depth_5.tif")
       d5<-crop(d5,dem, snap="out")
@@ -76,6 +80,10 @@ SoilParams<-function(catch, DEM, c=1000){
       #Adjust raster resolution: depth (=DEM resolution) to SoilGrids (250 m)
       depth<-aggregate(depth, fact=f_a)
       soils<-raster("SoilGrids/TAXNWRB.tif")
+      
+      soils[]=as.integer(soils[]) #convert to integer
+      dataType(soils)="INT2S"
+      
       soils<-crop(soils, depth, snap="out")
       depth<-resample(depth, soils, method="bilinear")
       
@@ -87,7 +95,10 @@ SoilParams<-function(catch, DEM, c=1000){
       sfun<-function(alluvial){ifelse(alluvial==1,1000,0)} 
       new<-calc(alluvial, fun=sfun)
       soils<-soils+new
-      writeRaster(soils, file=paste0("MapSoils/soils_", a,"_", b,".tif"), overwrite=T)
+      
+      soils[]=as.integer(soils[]) #convert to integer
+      dataType(soils)="INT2S"
+      writeRaster(soils, file=paste0("MapSoils/soils_", a,"_", b,".tif"), overwrite=T, datatype="INT2S")
       
       alluvial[is.na(alluvial)]=0 #mask NAs
       soil_sum = aggregate(x=data.frame(alluvial=getValues(alluvial), total_depth=getValues(depth)), by=list(soil_id=getValues(soils)), FUN=mean, na.rm=TRUE) #aggregate according to soil_id
@@ -274,10 +285,17 @@ SoilParams<-function(catch, DEM, c=1000){
   
   l_soils<-list()
   x<-list.files("MapSoils", pattern="^soils_[0-9].*\\.tif$") #avoid reading in an old merged map or other files
-  for (i in 1:length(x)){
-  l_soils[[i]]<-raster(paste0("MapSoils/",x[i]))}
+  for (i in 1:length(x))
+    {
+    l_soils[[i]]<-raster(paste0("MapSoils/",x[i]))
+  }
   m_soils<-do.call(raster::merge, l_soils)
-  writeRaster(m_soils, file="Mapsoils/soils_catchment.tif", overwrite=T)
   
+  #storage.mode(m_soils[])  
+  m_soils[]=as.integer(m_soils[]) #convert to integer
+  dataType(m_soils)="INT2S"
+  
+  writeRaster(m_soils, file="Mapsoils/soils_catchment.tif", overwrite=T, datatype="INT2S")
+
 }
     
