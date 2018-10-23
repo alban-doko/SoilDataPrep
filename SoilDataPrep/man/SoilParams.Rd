@@ -3,25 +3,28 @@
 \title{Extract soil parameters using pedotransfer functions}
 
 \description{
-Function to treat the study area tile by tile. Slope is derivated from the DEM to choose between the two depth to bedrock values. The other soil characteristics are from SoilGrids. Then, pedotransfer functions are applied to calculate the soil parameters and prepare the input tables for WASA.}
+Function to treat the study area tile by tile. Slope is derived from the DEM to choose between the two depth to bedrock values. The other soil characteristics are from SoilGrids. Then, pedotransfer functions are applied to calculate the soil parameters and prepare the input tables for WASA-SED.}
 
-\usage{SoilParams(catch, DEM, c=1000)}
+\usage{SoilParams(catch, DEM, c=1000, resume=FALSE)}
 
 \arguments{
 \item{catch}{shapefile of the catchment/study area, different projections are accepted. Read the shapefile with readOGR().}
 \item{DEM}{digital elevation model of the study area (raster), different projections are accepted, using gcs WGS1984 longlat may save some time. Read the raster file with raster().}
-\item{c}{maximum number of cells in x and y direction for single tiles, default is set to 1000}
+\item{c}{maximum number of cells in x and y direction for single tiles, default is set to 1000. Decrease this number if you run into memory limitations.}
+\item{resume}{resume a previous run, requires the files soil_sum_collected.txt and last_tile.txt. Default: FALSE}
 }
 
 \value{
+The following files are produced:
+
 
 \item{last_tile}{Indicates which was the last treated tile to allow continue a not-finished run from this tile with SoilParamsCont}
 \item{soil_sum_recent}{Shows the results of the last calculated tile}
 \item{soil_sum_collected}{Table where the results of all tiles are put together}
 \item{soil_sum_weighted}{The final result of all tiles containing mean values for each soil_id, weighted due to the number of occurrence}
-\item{Mapsoils/soils_catchment.tif}{Map with the new soil ids, to ids with alluvium 1000 was added}
+\item{Mapsoils/soils_catchment.tif}{Map with the new soil IDs; 1000 was added to soils within alluvial areas }
 
-Input tables for WASA:
+Input tables for WASA-SED:
 \item{particle_classes}{Definition of particle classes}
 \item{r_soil_contains_particles}{Fraction of each particle class for each soil_id, only topsoil is considered}
 \item{horizons}{Describes each horizon of each soil_id}

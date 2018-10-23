@@ -51,19 +51,15 @@ catch<-readOGR(dsn = "e:/till/uni/gis/esera_2018/basin.shp")
 GetDTB(catch) #download depth-to-bedrock grid
 GetSG(catch) #download soilgrids - grids
 
-#SoilParams & SoilParamsCont####
-#catch<-readOGR(dsn = "esera_catch.shp")
-#DEM<-raster("Esera_GIS/esera_dem") # read in DEM
 DEM<-raster("e:/till/uni/gis/esera_2018/dem.tiff") # read in DEM
 
 #### apply pedotransfer functions to grids, aggregate
-SoilParams(catch, DEM)
-SoilParamsCont(catch, DEM)
+SoilParams(catch, DEM, resume = TRUE)
 
 #---------------------------------------------------------------------------------------
 ##### check output tables ####
 
-last_tile<-read.table("last_tile.txt", header=T)
+last_tile<-read.table("last_tile.txt", header=T) #should contain the last tile
 
 soil_sum_collected<-read.table("soil_sum_collected.txt")
 summary(soil_sum_collected)
@@ -77,7 +73,7 @@ summary(soil_sum_weighted)
 soilmap<-raster("MapSoils/soils_catchment.tif")
 plot(soilmap)
 
-#WASA input
+#WASA-SED input
 
 particle_classes<-read.table("particle_classes.txt", header=T)
 
