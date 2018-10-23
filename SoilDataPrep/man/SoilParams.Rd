@@ -8,9 +8,10 @@ Function to treat the study area tile by tile. Slope is derivated from the DEM t
 \usage{SoilParams(catch, DEM, c=1000)}
 
 \arguments{
-\item{catch} shapefile of the catchment/study area, different projections are accepted. Read the shapefile with readOGR().
-\item{DEM} digital elevation model of the study area (raster), different projections are accepted, using gcs WGS1984 longlat may save some time. Read the raster file with raster().
-\item{c} maximum number of cells in x and y direction for single tiles, default is set to 1000}
+\item{catch}{shapefile of the catchment/study area, different projections are accepted. Read the shapefile with readOGR().}
+\item{DEM}{digital elevation model of the study area (raster), different projections are accepted, using gcs WGS1984 longlat may save some time. Read the raster file with raster().}
+\item{c}{maximum number of cells in x and y direction for single tiles, default is set to 1000}
+}
 
 \value{
 

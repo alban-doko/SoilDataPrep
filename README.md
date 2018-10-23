@@ -52,3 +52,5 @@ library(SoilDataPrep)
 ## Input
 DEM and shapefile of the catchment
 
+## Example
+An example workflow can be found in SoilDataPrep/example
