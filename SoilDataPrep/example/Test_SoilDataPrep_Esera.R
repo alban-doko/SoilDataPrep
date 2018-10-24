@@ -11,6 +11,7 @@ library(gWidgetstcltk)
 library(curl)
 library(data.table)
 library(panelaggregation)
+library(devtools)
 
 
 #install euptf
@@ -21,7 +22,6 @@ library(panelaggregation)
   unlink(c("euptf.zip", "euptf_vignette_1.4.pdf","euptf_1.4.tar.gz","euptf"), recursive = TRUE, force = TRUE) #clean up
   library(euptf)
 
-library(devtools)
 #install soiltexture
   install_github(repo = "julienmoeys/soiltexture/pkg/soiltexture") #install soiltexture package
 
@@ -46,15 +46,14 @@ library(SoilDataPrep)
 #---------------------------------------------------------------------------------------
 
 #### get geodata: DTB & SoilGrids####
-#catch<-readOGR(dsn = "Esera_GIS/esera_projected/basin.shp")
 catch<-readOGR(dsn = "e:/till/uni/gis/esera_2018/basin.shp")
 GetDTB(catch) #download depth-to-bedrock grid
 GetSG(catch) #download soilgrids - grids
 
 DEM<-raster("e:/till/uni/gis/esera_2018/dem.tiff") # read in DEM
 
-#### apply pedotransfer functions to grids, aggregate
-SoilParams(catch, DEM, resume = TRUE)
+#### apply pedotransfer functions to grids, aggregate, export result files
+SoilParams(catch, DEM, resume = FALSE)
 
 #---------------------------------------------------------------------------------------
 ##### check output tables ####

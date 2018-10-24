@@ -25,7 +25,8 @@ SoilParams<-function(catch, DEM, c=1000, resume=FALSE){
   #Define factors to adapt different raster resolutions
   f_d<-floor(0.008333333/res(DEM)[1])
   f_a<-floor(0.002083333/res(DEM)[1])
-  
+
+    
   
 if (resume) #Start from last treated tile of former run
 {
@@ -44,15 +45,17 @@ if (resume) #Start from last treated tile of former run
 
 if (!resume) #Start from last treated tile of former run #new run, do not resume
 {
-  dir.create("MapSoils") #Create a folder to store map of new soil ids
   soil_sum_collected = NULL #aggregates results of single tiles
+  dir.create("MapSoils") #Create a folder to store map of new soil ids
+  unlink("MapSoils/*.*") #delete maps of prior runs
   start=data.frame(a=1, b=1) #Start from the first tile####
  } 
   
   
  for (a in start$a:v){
    for (b in 1:h){
-      if (a == start$a & b < start$b) next  #fast-forward to specified beginning
+     
+     if (a == start$a & b < start$b) next  #fast-forward to specified beginning
       
       write.table(x=data.frame("a"=a, "b"=b), file="last_tile.txt", row.names = F, sep=" \t")
       print(paste("Treating tile", a,b, Sys.time(), "Memory in use:", memory.size(max=F)))
@@ -68,65 +71,101 @@ if (!resume) #Start from last treated tile of former run #new run, do not resume
         next
       }  
       
-      d5<-raster("Pelletier_DTB/depth_5.tif")
+      d5<-raster("Pelletier_DTB/depth_5.tif") #"hillslope-soildepth"
       d5<-crop(d5,dem, snap="out")
       d5[d5<=0]<-NA
-      d6<-raster("Pelletier_DTB/depth_6.tif")
+      d6<-raster("Pelletier_DTB/depth_6.tif") #"valley-bottom soildepth"
       d6<-crop(d6,dem, snap="out")
       d6[d6<=0]<-NA
       slope<-terrain(dem, opt="slope", unit="degrees", neighbors=8)
       
-      #Adjust raster resolution: d5,6 (1 km resolution) to DEM
-      d5<-disaggregate(d5, fact=f_d)
-      d6<-disaggregate(d6, fact=f_d)
-      d5<-resample(d5, dem, method="bilinear")
-      d6<-resample(d6, dem, method="bilinear")
+      #Adjust raster resolution: Pelletier d5,6 (1 km resolution) to DEM
+      d5 = resample(x=d5, y=dem, method="ngb")
+      d6 = resample(x=d6, y=dem, method="ngb")
+      #plot(d5)
+      #plot(d5_2)
+      
+      # d5<-disaggregate(d5, fact=f_d)
+      # 
+      # 
+      # d6<-disaggregate(d6, fact=f_d)
+      # d5<-resample(d5, dem, method="bilinear")
+      # d6<-resample(d6, dem, method="bilinear")
+      
       rm(dem)
       
-      #Create d5 cells
+      #Create d5 mask - mark steep cells as "hillslope"
       dfun<-function(slope){ifelse(slope>=20, 1,0)}
-      depth_5<-calc(slope, fun=dfun)
-      depth_5<-depth_5*d5
+      hillslopes<-calc(slope, fun=dfun)
+      depth_5<-hillslopes*d5
       
-      #Create d6 cells
-      dfun<-function(slope){ifelse(slope<20, 1,0)}
-      depth_6<-calc(slope, fun=dfun)
-      depth_6<-depth_6*d6
+      #Create d6 mask - mark flat cells as "valley bottom"
+      #depth_6<- 1-depth_5 #complement of hillslopes
+      #plot(depth_6)
+      depth_6 <- (!hillslopes)*d6
+
       rm(slope)
       rm(d5)
       rm(d6)
       
-      #Depth=d5+d6
-      depth<- depth_5+depth_6
+      depth<- depth_5+depth_6 #superpose depth grids
+      
+      # summary(depth_5)
+      # summary(depth_5[depth_5[]!=0])
+      # summary(depth_6[depth_6[]!=0])
+      # 
+      # min(which(depth_5[]<=0.33 & depth_5[]!=0))
+      # depth_5[657354]
+      # depth_6[657354]
+      # 
+      # summary(depth_6)
+      # summary(depth)
+      # summary(depth[depth[]!=0])
+      # 
+      # plot(depth)
       rm(depth_5)
       rm(depth_6)
       
-      #Adjust raster resolution: depth (=DEM resolution) to SoilGrids (250 m)
-      depth<-aggregate(depth, fact=f_a)
-      soils<-raster("SoilGrids/TAXNWRB.tif")
       
+#      depth<-aggregate(depth, fact=f_a)
+
+      #load soil grids soil taxonomy
+      soils<-raster("SoilGrids/TAXNWRB.tif")
       soils[]=as.integer(soils[]) #convert to integer
       dataType(soils)="INT2S"
       
       soils<-crop(soils, depth, snap="out")
-      depth<-resample(depth, soils, method="bilinear")
+      #depth<-resample(depth, soils, method="bilinear")
+      
+      soils = resample(x=soils, y=depth, method="ngb") #Adjust raster resolution: SoilGrids (250 m) to depth (=DEM resolution)
       
       #alluvial
       afun<-function(depth){ifelse(depth>=3, 1,0)}
       alluvial<-calc(depth, fun=afun)
+      #plot(alluvial)
+      #plot(depth)
       
       #Create new soil ids: if alluvial +1000
       sfun<-function(alluvial){ifelse(alluvial==1,1000,0)} 
       new<-calc(alluvial, fun=sfun)
       soils<-soils+new
+      #plot(soils)
+      #plot(soils2)
+      #click(soils2)
       
       soils[]=as.integer(soils[]) #convert to integer
       dataType(soils)="INT2S"
       writeRaster(soils, file=paste0("MapSoils/soils_", a,"_", b,".tif"), overwrite=T, datatype="INT2S")
       
       alluvial[is.na(alluvial)]=0 #mask NAs
-      soil_sum = aggregate(x=data.frame(alluvial=getValues(alluvial), total_depth=getValues(depth)), by=list(soil_id=getValues(soils)), FUN=mean, na.rm=TRUE) #aggregate according to soil_id
-      names(soil_sum)[-1]=c("alluvial_flag","depth")
+      soil_sum_tile = aggregate(x=data.frame(alluvial_flag=getValues(alluvial), depth=getValues(depth)), by=list(soil_id=getValues(soils)), FUN=mean, na.rm=TRUE) #aggregate according to soil_id
+      
+      counts = as.data.frame(table(getValues(soils))) #tabulate soil-ID frequency
+      names(counts)=c("soil_id","cellcount")
+      soil_sum_tile=merge(soil_sum_tile, counts) #add cellcounts
+      soil_sum_tile$tile_a= a #record current tile number
+      soil_sum_tile$tile_b= b
+      
       rm(alluvial)
       rm(depth)
       
@@ -175,12 +214,10 @@ if (!resume) #Start from last treated tile of former run #new run, do not resume
         rm(om)
         rm(coarse)
         rm(ph)
-        rm(cec)
+       # rm(cec) #keep this a a template
         
         
         #Calculate theta_r/pwp/_s and ks with {euptf}####
-        ptf_props<-NULL
-        
         #Water content at permanent wilting point (1500 kPa/15000 cm)
         ptf_props=data.frame(theta_pwp = predict.ptf(newdata=euptf_attributes, ptf="PTF12"))
         
@@ -209,59 +246,80 @@ if (!resume) #Start from last treated tile of former run #new run, do not resume
         #Pore-size-index lambda (horizons) [-]
         ptf_props$pore_size_i = pft.rawls(soilprop=soil_attributes, parameters="lambda")[,"lambda"]
         
+        #str(soil_attributes)
         
-        #Aggregate properties from basic horizon input data####
-        soil_sum2  = aggregate(x=soil_attributes, by=list(soil_id=getValues(soils)), FUN=mean, na.rm=TRUE) #aggregate according to soil_id
-        soil_sum2$cellcount = table(getValues(soils))
-        soil_sum2$tile_a= a
-        soil_sum2$tile_b= b
-        names(soil_sum2)[-1]=paste0(soillayer, names(soil_sum2)[-1]) #adjust column names
-        soil_sum = merge(soil_sum, soil_sum2) 
-        soil_sum <- unique(soil_sum)
+        soil_attributes=cbind(soil_attributes, ptf_props) #combine all acquired attributes in a single table
+        
+        soil_sum_layer=data.frame(soil_id=soil_sum_tile$soil_id)
+        #aggregate coarse grids by finer resolution soil-ID grid
+        for (s_attribute in names(soil_attributes))
+        {
+          #s_attribute="clay"
+          t_raster=cec  #use this 250-m-grid as template
+          t_raster[]=soil_attributes[, s_attribute]   #put computed values into grid
+          t_raster2=resample(x=t_raster, y=soils, method="ngb")  #resample to DEM-resolution
+          attr_aggregated  = aggregate(x=getValues(t_raster2), by=list(soil_id=getValues(soils)), FUN=mean, na.rm=TRUE) #aggregate according to soil_id
+          names(attr_aggregated)[2]=s_attribute #rename column
+          soil_sum_layer = merge(soil_sum_layer, attr_aggregated, all=T) #add this attribute to collection
+        }
+
+        soil_sum_layer$nfk=soil_sum_layer$fk-soil_sum_layer$theta_r          #compute nfk
+        names(soil_sum_layer)[-1]=paste0(soillayer, names(soil_sum_layer)[-1]) #add layer number to column names      
+        
+        
+        # #Aggregate properties from basic horizon input data####
+        # soil_sum2  = aggregate(x=soil_attributes, by=list(soil_id=getValues(soils)), FUN=mean, na.rm=TRUE) #aggregate according to soil_id
+        # soil_sum2$cellcount = table(getValues(soils))
+        # soil_sum2$tile_a= a
+        # soil_sum2$tile_b= b
+        # names(soil_sum2)[-1]=paste0(soillayer, names(soil_sum2)[-1]) #adjust column names
+
+        soil_sum_tile = merge(soil_sum_tile, soil_sum_layer) #add current layer to collection done over all layers of this tile
+        #soil_sum_tile <- unique(soil_sum_tile)
         
         #Aggregate properties from PTFs####
-        soil_sum2 = aggregate(x=ptf_props, by=list(soil_id=getValues(soils)), FUN=mean, na.rm=TRUE) #aggregate according to soil_id
-        soil_sum2$nfk=soil_sum2$fk-soil_sum2$theta_r          #compute nfk
-        names(soil_sum2)[-1]=paste0(soillayer, names(soil_sum2)[-1]) #adjust column names
-        soil_sum = merge(soil_sum, soil_sum2)   
-        write.table(x=soil_sum, file="soil_sum_recent.txt", sep="\t")
-        rm(soil_sum2)
+        #soil_sum2 = aggregate(x=ptf_props, by=list(soil_id=getValues(soils)), FUN=mean, na.rm=TRUE) #aggregate according to soil_id
+        #soil_sum2$nfk=soil_sum2$fk-soil_sum2$theta_r          #compute nfk
+        #names(soil_sum2)[-1]=paste0(soillayer, names(soil_sum2)[-1]) #adjust column names
+        #soil_sum_tile = merge(soil_sum_tile, soil_sum2)   
+        write.table(x=soil_sum_tile, file="soil_sum_recent.txt", sep="\t", quote=FALSE)
+        rm(soil_sum_layer)
       }
       
-      soil_sum_collected = rbind(soil_sum_collected, soil_sum) #collect results of single tiles
-      write.table(x=soil_sum_collected, file="soil_sum_collected.txt", sep=" \t")
+      soil_sum_collected = rbind(soil_sum_collected, soil_sum_tile) #collect results of single tiles
+      write.table(x=soil_sum_collected, file="soil_sum_collected.txt", sep=" \t", quote=FALSE)
     }}
   
   #--------------------------------------------------------------------------------------
-  soil_sum = soil_sum_collected #results of all tiles together
-  soil_means<- data.table(soil_sum)
-  soil_means<- computeWeightedMeans(data_table=soil_means, weight=soil_means$sl7cellcount, by=soil_means$soil_id )
-  soil_sum<-data.frame(soil_means)
+  #### aggregate results of all tiles, weighted by number of cells found ####
+  soil_means<- data.table(soil_sum_collected)
+  soil_means<- computeWeightedMeans(data_table=soil_means, weight=soil_means$cellcount, by=soil_means$soil_id )
+  soil_means2<-data.frame(soil_means)
   rm(soil_means)
-  write.table(x=soil_sum, file="soil_sum_weighted.txt", sep=" \t")
+  write.table(x=soil_means2, file="soil_sum_weighted.txt", sep=" \t")
   
   #Thickness [mm]
-  soil_sum$sl1thickness = 25 
-  soil_sum$sl2thickness = 75
-  soil_sum$sl3thickness = 120
-  soil_sum$sl4thickness = 230
-  soil_sum$sl5thickness = 350
-  soil_sum$sl6thickness = 700
-  soil_sum$sl7thickness = 500
+  soil_means2$sl1thickness = 25 
+  soil_means2$sl2thickness = 75
+  soil_means2$sl3thickness = 120
+  soil_means2$sl4thickness = 230
+  soil_means2$sl5thickness = 350
+  soil_means2$sl6thickness = 700
+  soil_means2$sl7thickness = 500
   
   #Convert unit of coarse from % to [-]
-  soil_sum$sl1coarse = soil_sum$sl1coarse / 100 
-  soil_sum$sl2coarse = soil_sum$sl2coarse / 100 
-  soil_sum$sl3coarse = soil_sum$sl3coarse / 100
-  soil_sum$sl4coarse = soil_sum$sl4coarse / 100
-  soil_sum$sl5coarse = soil_sum$sl5coarse / 100
-  soil_sum$sl6coarse = soil_sum$sl6coarse / 100
-  soil_sum$sl7coarse = soil_sum$sl7coarse / 100
+  soil_means2$sl1coarse = soil_means2$sl1coarse / 100 
+  soil_means2$sl2coarse = soil_means2$sl2coarse / 100 
+  soil_means2$sl3coarse = soil_means2$sl3coarse / 100
+  soil_means2$sl4coarse = soil_means2$sl4coarse / 100
+  soil_means2$sl5coarse = soil_means2$sl5coarse / 100
+  soil_means2$sl6coarse = soil_means2$sl6coarse / 100
+  soil_means2$sl7coarse = soil_means2$sl7coarse / 100
   
   
   #Prepare output files to be imported into make_wasa_db####
   #For table soils
-  write.table(file="soil.dat", x=data.frame(pid=soil_sum$soil_id, description="NA", bedrock_flag=1, alluvial=soil_sum$alluvial, b_om=soil_sum$sl1om),
+  write.table(file="soil.dat", x=data.frame(pid=soil_means2$soil_id, description="NA", bedrock_flag=1, alluvial=soil_means2$alluvial, b_om=soil_means2$sl1om),
               sep="\t", quote=FALSE, row.names=FALSE)
   
   #For table horizons
@@ -270,16 +328,16 @@ if (!resume) #Start from last treated tile of former run #new run, do not resume
               sep="\t", quote=FALSE, row.names=FALSE, col.names=FALSE)
   
   hcounter=0 #horizon counter
-  for (soil_id in unique(soil_sum$soil_id))
+  for (soil_id in unique(soil_means2$soil_id))
   {
-    srow=which(soil_sum$soil_id==soil_id)
+    srow=which(soil_means2$soil_id==soil_id)
     for (soillayer in c("sl1", "sl2", "sl3", "sl4", "sl5", "sl6", "sl7"))
     {
       hcounter=hcounter+1 
-      if (soil_sum[srow, paste0(soillayer, "thickness")]<=0) next #skip non-exiting subsoils
+      if (soil_means2[srow, paste0(soillayer, "thickness")]<=0) next #skip non-exiting subsoils
       
-      hfields=intersect (paste0(soillayer, hor_fields), names(soil_sum) ) #fields to extract for current horizon
-      oline=soil_sum[srow, hfields] #extract the current horizon
+      hfields=intersect (paste0(soillayer, hor_fields), names(soil_means2) ) #fields to extract for current horizon
+      oline=soil_means2[srow, hfields] #extract the current horizon
       oline=cbind(pid=hcounter, description="", soil_id=soil_id, 
                   position = as.numeric(sub(soillayer,pattern = "sl", repl="")),
                   oline)
@@ -289,10 +347,10 @@ if (!resume) #Start from last treated tile of former run #new run, do not resume
     }}
   
   #For table r_soil_contains_particles (only topsoil is considered)  
-  soil_sum$sl1sand=100-(soil_sum$sl1silt+soil_sum$sl1clay)
-  soil_idss=rep(soil_sum$soil_id, each=3)
-  class_id  =rep(1:3, nrow(soil_sum))
-  tt=matrix(c(soil_sum$sl1clay, soil_sum$sl1silt,soil_sum$sl1sand)/100, nrow=length(soil_sum$sl1clay))
+  soil_means2$sl1sand=100-(soil_means2$sl1silt+soil_means2$sl1clay)
+  soil_idss=rep(soil_means2$soil_id, each=3)
+  class_id  =rep(1:3, nrow(soil_means2))
+  tt=matrix(c(soil_means2$sl1clay, soil_means2$sl1silt,soil_means2$sl1sand)/100, nrow=length(soil_means2$sl1clay))
   frac    =as.vector(t(tt))
   write.table(file="r_soil_contains_particles.dat", 
               x=data.frame(soil_id=soil_idss,class_id=class_id,fraction=frac),

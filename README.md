@@ -1,6 +1,6 @@
 # SoilDataPrep
 
-Prepare soil input (e.g. for meso-scale hydrological modelling with WASA), using the global datasets SoilGrids and Pelletier et al. (2016). Pedotransfer functions from other packages ```(ptf.rawls\{soilwaterptf\}, euptf\{euptf\})``` are applied to calculate soil characteristics.
+Prepare soil parameterisation (e.g. for meso-scale hydrological modelling with WASA), using the global datasets SoilGrids and Pelletier et al. (2016). Pedotransfer functions from other packages ```(ptf.rawls{soilwaterptf}, euptf{euptf})``` are applied to calculate soil characteristics.
 
 Pelletier, J.D. et al. 2016, A gridded global data set of soil, immobile regolith, and sedimentary deposit thicknesses for regional and global land surface modeling, Journal of Advances in Modeling Earth Systems, 8.
 
@@ -17,6 +17,7 @@ library(gWidgetstcltk)
 library(curl)
 library(data.table)
 library(panelaggregation)
+library(devtools)
 
 
 #install euptf
@@ -27,7 +28,6 @@ library(panelaggregation)
   unlink(c("euptf.zip", "euptf_vignette_1.4.pdf","euptf_1.4.tar.gz","euptf"), recursive = TRUE, force = TRUE) #clean up
   library(euptf)
 
-library(devtools)
 #install soiltexture
   install_github(repo = "julienmoeys/soiltexture/pkg/soiltexture") #install soiltexture package
 
