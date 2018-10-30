@@ -5,7 +5,8 @@ SoilParams<-function(catch, DEM, c=1000, resume=FALSE){
   wgs<-"+proj=longlat +datum=WGS84 +ellps=WGS84 +towgs84=0,0,0"
   catch <- spTransform(catch, wgs)
   
-  if (projection(DEM)==projection(catch)) #only do reprojection if necessary 
+  if (projection(DEM)==projection(catch)|projection(DEM)=="+proj=longlat +datum=WGS84 +no_defs +ellps=WGS84 +towgs84=0,0,0") 
+    #only do reprojection if necessary 
     DEM_latlon =DEM else
     DEM_latlon <- projectRaster(DEM, crs = wgs)   #takes some time
   print("reprojecting done.")
@@ -43,7 +44,7 @@ if (resume) #Start from last treated tile of former run
   }
 }
 
-if (!resume) #Start from last treated tile of former run #new run, do not resume
+if (!resume) #Start new run, do not resume
 {
   soil_sum_collected = NULL #aggregates results of single tiles
   dir.create("MapSoils") #Create a folder to store map of new soil ids
@@ -73,7 +74,7 @@ if (!resume) #Start from last treated tile of former run #new run, do not resume
       
       d5<-raster("Pelletier_DTB/depth_5.tif") #"hillslope-soildepth"
       d5<-crop(d5,dem, snap="out")
-      d5[d5<=0]<-NA
+      d5[d5<=0]<-NA #apparently, nodata and 0 are not clearly distinguished, so we assume NA for cells with 0 
       d6<-raster("Pelletier_DTB/depth_6.tif") #"valley-bottom soildepth"
       d6<-crop(d6,dem, snap="out")
       d6[d6<=0]<-NA
@@ -98,11 +99,17 @@ if (!resume) #Start from last treated tile of former run #new run, do not resume
       dfun<-function(slope){ifelse(slope>=20, 1,0)}
       hillslopes<-calc(slope, fun=dfun)
       depth_5<-hillslopes*d5
+      depth_5[hillslopes==0]<-0 #enable superposition by addition
+      depth_5[hillslopes==1 & is.na(d5)] <-0 #set true soil depth of hillslopes to 0
+      
+      
       
       #Create d6 mask - mark flat cells as "valley bottom"
       #depth_6<- 1-depth_5 #complement of hillslopes
       #plot(depth_6)
       depth_6 <- (!hillslopes)*d6
+      depth_6[hillslopes==1]<-0 #set contribution of this layer on hillslopes to 0
+      
 
       rm(slope)
       rm(d5)
