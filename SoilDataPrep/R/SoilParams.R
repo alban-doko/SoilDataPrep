@@ -203,7 +203,7 @@ if (!resume) #Start new run, do not resume
                                    silt  =getValues(silt),
                                    bulkD  =getValues(bulkD)/1000,
                                    om     =1.74 * getValues(om)/10, #convert OC to OM
-                                   coarse =getValues(coarse),
+                                   coarse_frag =getValues(coarse),
                                    topSoil=as.numeric(soillayer=="sl1"))
         
         euptf_attributes=data.frame(TOPSOIL= ifelse(soillayer=="sl1", "top","sub"),
@@ -320,14 +320,13 @@ if (!resume) #Start new run, do not resume
   soil_means2$sl7thickness = 500
   
   #Convert unit of coarse from % to [-]
-  soil_means2$sl1coarse = soil_means2$sl1coarse / 100 
-  soil_means2$sl2coarse = soil_means2$sl2coarse / 100 
-  soil_means2$sl3coarse = soil_means2$sl3coarse / 100
-  soil_means2$sl4coarse = soil_means2$sl4coarse / 100
-  soil_means2$sl5coarse = soil_means2$sl5coarse / 100
-  soil_means2$sl6coarse = soil_means2$sl6coarse / 100
-  soil_means2$sl7coarse = soil_means2$sl7coarse / 100
-  
+  soil_means2$sl1coarse_frag = soil_means2$sl1coarse_frag / 100 
+  soil_means2$sl2coarse_frag = soil_means2$sl2coarse_frag / 100 
+  soil_means2$sl3coarse_frag = soil_means2$sl3coarse_frag / 100
+  soil_means2$sl4coarse_frag = soil_means2$sl4coarse_frag / 100
+  soil_means2$sl5coarse_frag = soil_means2$sl5coarse_frag / 100
+  soil_means2$sl6coarse_frag = soil_means2$sl6coarse_frag / 100
+  soil_means2$sl7coarse_frag = soil_means2$sl7coarse_frag / 100
   
   #Prepare output files to be imported into make_wasa_db####
   #For table soils
@@ -356,7 +355,6 @@ if (!resume) #Start new run, do not resume
       
       write.table(file="horizons.dat", x=oline,
                   sep="\t", quote=FALSE, row.names=FALSE, col.names=FALSE, append=TRUE)
-      browser()
     }}
   
   #For table r_soil_contains_particles (only topsoil is considered)  

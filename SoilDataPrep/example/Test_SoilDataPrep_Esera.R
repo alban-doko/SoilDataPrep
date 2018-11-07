@@ -1,18 +1,10 @@
 #Test SoilDataPrep example (Esera catchment)
 
 #### installation
-#install these libraries from CRAN, if you don't have them
-library(sp)
-library(raster)
-library(rgdal)
-library(rpart)
-library(gWidgets)
-library(gWidgetstcltk)
-library(curl)
-library(data.table)
-library(panelaggregation)
+#install these packages from CRAN, if you don't have them:
 library(devtools)
 
+#install these packages manually, if you don't have them:
 
 #install euptf
   curl::curl_download(url = "https://esdac.jrc.ec.europa.eu/public_path/shared_folder/themes/euptf.zip", destfile = "euptf.zip")
@@ -32,11 +24,7 @@ library(devtools)
   #install_github(repo = "rforge/soilwater/pkg/soilwaterptf") 
   install_github(repo = "tillf/soilwater/pkg/soilwaterptf") #use different fork, as the original has not been updated yet
 
-library(soiltexture)
-library(soilwaterfun)
-library(soilwaterptf)
   pft.rawls=ptf.rawls #fixes legacy spelling mistake
-  
 
 #install soilwaterfun package
   install_github(repo = "sophiaup/SoilDataPrep/SoilDataPrep")
