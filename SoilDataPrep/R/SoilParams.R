@@ -236,27 +236,32 @@ if (!resume) #Start new run, do not resume
         ptf_props$ks<- (10^(predict.ptf(newdata=euptf_attributes, ptf="PTF17")))*10
         
         #Calculate theta_s/2.5/1.8,suction, h_b and lambda with ptf.rawls####  
-        #Residual water content
-        ptf_props$theta_r=pft.rawls(soilprop=soil_attributes, h=0, parameters="theta_r")[,"theta_r"]
         
+        tt = pft.rawls(soilprop=soil_attributes, h=316, parameters=c("theta", "S_f", "theta_r", "h_b", "lambda"))
+        
+        #Residual water content
+        ptf_props$theta_r=tt[,"theta_r"]
+
         #Water content at field capacity (316 hPa / pF=2.6)
-        ptf_props$fk=pft.rawls(soilprop=soil_attributes, h=316, parameters="theta")[,"theta"]
+        ptf_props$fk=tt[,"theta"]
         
         #Water content at field capacity (63 hPa / pF=1.8)
         ptf_props$fk63=pft.rawls(soilprop=soil_attributes, h=63, parameters="theta")[,"theta"]
         
         #Suction at the wetting front (horizons) [mm]
-        ptf_props$suction=pft.rawls(soilprop=soil_attributes, parameters="suction")[,"suction"]
+        ptf_props$suction= tt[,"S_f"]
         
         #Bubbling pressure (horizons) [cm]
-        ptf_props$bubb_pres = pft.rawls(soilprop=soil_attributes, parameters="h_b")[,"h_b"]
+        ptf_props$bubb_pres = tt[,"h_b"]
         
         #Pore-size-index lambda (horizons) [-]
-        ptf_props$pore_size_i = pft.rawls(soilprop=soil_attributes, parameters="lambda")[,"lambda"]
+        ptf_props$pore_size_i = tt[,"lambda"]
+        rm(tt)
         
         #str(soil_attributes)
-        
         soil_attributes=cbind(soil_attributes, ptf_props) #combine all acquired attributes in a single table
+        rm(tt)
+        rm(ptf_props)
         
         soil_sum_layer=data.frame(soil_id=soil_sum_tile$soil_id)
         #aggregate coarse grids by finer resolution soil-ID grid
@@ -346,12 +351,13 @@ if (!resume) #Start new run, do not resume
       
       hfields=intersect (paste0(soillayer, hor_fields), names(soil_means2) ) #fields to extract for current horizon
       oline=soil_means2[srow, hfields] #extract the current horizon
-      oline=cbind(pid=hcounter, description="", soil_id=soil_id, 
+      oline=cbind(pid=hcounter, description="NA", soil_id=soil_id, 
                   position = as.numeric(sub(soillayer,pattern = "sl", repl="")),
                   oline)
       
       write.table(file="horizons.dat", x=oline,
                   sep="\t", quote=FALSE, row.names=FALSE, col.names=FALSE, append=TRUE)
+      browser()
     }}
   
   #For table r_soil_contains_particles (only topsoil is considered)  
