@@ -256,8 +256,7 @@ if (!resume) #Start new run, do not resume
         
         #Pore-size-index lambda (horizons) [-]
         ptf_props$pore_size_i = tt[,"lambda"]
-        rm(tt)
-        
+
         #str(soil_attributes)
         soil_attributes=cbind(soil_attributes, ptf_props) #combine all acquired attributes in a single table
         rm(tt)
@@ -332,7 +331,7 @@ if (!resume) #Start new run, do not resume
   
   #Prepare output files to be imported into make_wasa_db####
   #For table soils
-  write.table(file="soil.dat", x=data.frame(pid=soil_means2$soil_id, description="NA", bedrock_flag=1, alluvial=soil_means2$alluvial, b_om=soil_means2$sl1om),
+  write.table(file="soil.dat", x=data.frame(pid=soil_means2$soil_id, description="NA", bedrock_flag=1, alluvial_flag=soil_means2$alluvial_flag, b_om=soil_means2$sl1om),
               sep="\t", quote=FALSE, row.names=FALSE)
   
   #For table horizons
