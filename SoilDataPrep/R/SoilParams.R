@@ -14,6 +14,7 @@ SoilParams<-function(catch, DEM, c=1000, resume=FALSE){
 
   #Crop DEM to the size of the catchment's bbox
   DEM<-crop(DEM_latlon, bbox(catch))
+  rm(DEM_latlon)
   
   
   #Divide study area into tiles
