@@ -237,7 +237,7 @@ if (!resume) #Start new run, do not resume
         
         #Calculate theta_s/2.5/1.8,suction, h_b and lambda with ptf.rawls####  
         
-        tt = pft.rawls(soilprop=soil_attributes, h=316, parameters=c("theta", "S_f", "theta_r", "h_b", "lambda"))
+        tt = ptf.rawls(soilprop=soil_attributes, h=316, parameters=c("theta", "S_f", "theta_r", "h_b", "lambda"))
         
         #Residual water content
         ptf_props$theta_r=tt[,"theta_r"]
@@ -246,7 +246,7 @@ if (!resume) #Start new run, do not resume
         ptf_props$fk=tt[,"theta"]
         
         #Water content at field capacity (63 hPa / pF=1.8)
-        ptf_props$fk63=pft.rawls(soilprop=soil_attributes, h=63, parameters="theta")[,"theta"]
+        ptf_props$fk63=ptf.rawls(soilprop=soil_attributes, h=63, parameters="theta")[,"theta"]
         
         #Suction at the wetting front (horizons) [mm]
         ptf_props$suction= tt[,"S_f"]

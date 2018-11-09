@@ -3,6 +3,7 @@
 #### installation
 #install these packages from CRAN, if you don't have them:
 library(devtools)
+library(sp)
 
 #install these packages manually, if you don't have them:
 
@@ -20,14 +21,11 @@ library(devtools)
 #install soilwaterfun  
   install_github(repo = "rforge/soilwater/pkg/soilwaterfun") 
 
-#install soilwaterfun package
-  #install_github(repo = "rforge/soilwater/pkg/soilwaterptf") 
-  install_github(repo = "tillf/soilwater/pkg/soilwaterptf") #use different fork, as the original has not been updated yet
-
-  pft.rawls=ptf.rawls #fixes legacy spelling mistake
-
-#install soilwaterfun package
-  install_github(repo = "sophiaup/SoilDataPrep/SoilDataPrep")
+#install soilwaterptf package
+  install_github(repo = "julienmoeys/soilwater/pkg/soilwaterptf") #install soiltexture package
+  
+#install SoilDataPrep package
+  install_github(repo = "TillF/SoilDataPrep/SoilDataPrep")
   
 library(SoilDataPrep)
 
