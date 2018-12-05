@@ -317,7 +317,7 @@ if (!resume) #Start new run, do not resume
   rm(soil_means)
   write.table(x=soil_means2, file="soil_sum_weighted.txt", sep=" \t")
   
-  #Thickness [mm]
+  #Thickness [mm] - set thickness of soil layers from those used in soilgrids
   soil_means2$sl1thickness = 25 
   soil_means2$sl2thickness = 75
   soil_means2$sl3thickness = 120
@@ -337,7 +337,8 @@ if (!resume) #Start new run, do not resume
   
   #Prepare output files to be imported into make_wasa_db####
   #For table soils
-  write.table(file="soil.dat", x=data.frame(pid=soil_means2$soil_id, description="NA", bedrock_flag=1, alluvial_flag=soil_means2$alluvial_flag, b_om=soil_means2$sl1om),
+  soil_means2$bedrock_flag = 1 - soil_means2$alluvial_flag  #bedrock below all profiles except the alluvial ones
+  write.table(file="soil.dat", x=data.frame(pid=soil_means2$soil_id, description="NA", bedrock_flag=soil_means2$bedrock_flag, alluvial_flag=soil_means2$alluvial_flag, b_om=soil_means2$sl1om),
               sep="\t", quote=FALSE, row.names=FALSE)
   
   #For table horizons
@@ -348,11 +349,23 @@ if (!resume) #Start new run, do not resume
   hcounter=0 #horizon counter
   for (soil_id in unique(soil_means2$soil_id))
   {
+    cumulated_thickness=0 #sum of thickness of layers
     srow=which(soil_means2$soil_id==soil_id)
+    last_horizon=FALSE #flag for exiting loop below on reaching the lowermost horizon
     for (soillayer in c("sl1", "sl2", "sl3", "sl4", "sl5", "sl6", "sl7"))
     {
+      
       hcounter=hcounter+1 
+      
       if (soil_means2[srow, paste0(soillayer, "thickness")]<=0) next #skip non-exiting subsoils
+      cumulated_thickness=cumulated_thickness + soil_means2[srow, paste0(soillayer, "thickness")] #sum of thickness of layers
+      if (cumulated_thickness > soil_means2[srow, "depth"]*1000)
+      {
+        soil_means2[srow, paste0(soillayer, "thickness")] = soil_means2[srow, paste0(soillayer, "thickness")] -
+                                                          (cumulated_thickness - soil_means2[srow, "depth"]*1000)
+        #reduce real thickness of last horizon
+        last_horizon=TRUE
+      }
       
       hfields=intersect (paste0(soillayer, hor_fields), names(soil_means2) ) #fields to extract for current horizon
       oline=soil_means2[srow, hfields] #extract the current horizon
@@ -360,9 +373,13 @@ if (!resume) #Start new run, do not resume
                   position = as.numeric(sub(soillayer,pattern = "sl", repl="")),
                   oline)
       
-      write.table(file="horizons.dat", x=oline,
+      write.table(file="horizons.dat", x=format(oline, digits=4),
                   sep="\t", quote=FALSE, row.names=FALSE, col.names=FALSE, append=TRUE)
-    }}
+      if (last_horizon) 
+        break #exit loop on reaching the lowermost horizon
+
+    }
+  }
   
   #For table r_soil_contains_particles (only topsoil is considered)  
   soil_means2$sl1sand=100-(soil_means2$sl1silt+soil_means2$sl1clay)
