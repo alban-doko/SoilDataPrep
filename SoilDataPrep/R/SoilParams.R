@@ -8,7 +8,14 @@ SoilParams<-function(catch, DEM, c=1000, resume=FALSE){
   if (projection(DEM)==projection(catch)|projection(DEM)=="+proj=longlat +datum=WGS84 +no_defs +ellps=WGS84 +towgs84=0,0,0") 
     #only do reprojection if necessary 
     DEM_latlon =DEM else
-    DEM_latlon <- projectRaster(DEM, crs = wgs)   #takes some time
+    {  
+      DEM_latlon <- try(projectRaster(DEM, crs = wgs), silent = TRUE)   #takes some time
+      if (class(DEM_latlon)=="try-error")
+      {  
+        cat("Could not reproject DEM ('", DEM_latlon, "'). You could try:\n- manually reprojecting DEM-file to WGS84\n- decreasing DEM extent (crop) or resolution")
+        stop()
+      }  
+    }
   print("reprojecting done.")
   
 
