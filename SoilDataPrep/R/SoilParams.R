@@ -55,7 +55,7 @@ if (resume) #Start from last treated tile of former run
 if (!resume) #Start new run, do not resume
 {
   soil_sum_collected = NULL #aggregates results of single tiles
-  dir.create("MapSoils") #Create a folder to store map of new soil ids
+  dir.create("MapSoils", showWarnings = FALSE) #Create a folder to store map of new soil ids
   unlink("MapSoils/*.*") #delete maps of prior runs
   start=data.frame(a=1, b=1) #Start from the first tile####
  } 
@@ -64,7 +64,7 @@ if (!resume) #Start new run, do not resume
  for (a in start$a:v){
    for (b in 1:h){
      
-     if (a == start$a & b < start$b) next  #fast-forward to specified beginning
+     if (a == start$a & b <= start$b) next  #fast-forward to specified beginning
       
       write.table(x=data.frame("a"=a, "b"=b), file="last_tile.txt", row.names = F, sep=" \t")
       print(paste("Treating tile", a,b, Sys.time(), "Memory in use:", memory.size(max=F)))
@@ -307,7 +307,8 @@ if (!resume) #Start new run, do not resume
       
       soil_sum_collected = rbind(soil_sum_collected, soil_sum_tile) #collect results of single tiles
       write.table(x=soil_sum_collected, file="soil_sum_collected.txt", sep=" \t", quote=FALSE)
-    }}
+   }}
+  print("all tiles treated, aggregating results...")
   
   #--------------------------------------------------------------------------------------
   #### aggregate results of all tiles, weighted by number of cells found ####

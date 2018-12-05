@@ -1,7 +1,7 @@
 Package: SoilDataPrep
 Type: Package
 Title: Prepare soil input for hydrological modelling, specifically with WASA-SED
-Version: 1.014
+Version: 1.015
 Date: 2018-12-05
 Author: c(
     person("Sophia", "Dobkowitz", email = "dobkowit@uni-potsdam.de", role = c("cre","aut"),
