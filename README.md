@@ -42,8 +42,8 @@ library(soiltexture)
 library(soilwaterfun)
 library(soilwaterptf)
 
-#install soilwaterfun package
-  install_github(repo = "sophiaup/SoilDataPrep/SoilDataPrep")
+#install SoilDataPrep package
+  install_github(repo = "tillf/SoilDataPrep/SoilDataPrep")
   
 library(SoilDataPrep)
 
@@ -53,4 +53,4 @@ library(SoilDataPrep)
 DEM and shapefile of the catchment
 
 ## Example
-An example workflow can be found in SoilDataPrep/example
+An example workflow can be found in ```SoilDataPrep/example```
