@@ -66,7 +66,7 @@ if (!resume) #Start new run, do not resume
      
      if (a == start$a & b <= start$b) next  #fast-forward to specified beginning
       
-      write.table(x=data.frame("a"=a, "b"=b), file="last_tile.txt", row.names = F, sep=" \t")
+      
       print(paste("Treating tile", a,b, Sys.time(), "Memory in use:", memory.size(max=F)))
       
       #Crop DEM to extent of current tile
@@ -307,7 +307,9 @@ if (!resume) #Start new run, do not resume
       
       soil_sum_collected = rbind(soil_sum_collected, soil_sum_tile) #collect results of single tiles
       write.table(x=soil_sum_collected, file="soil_sum_collected.txt", sep=" \t", quote=FALSE)
-   }}
+      write.table(x=data.frame("a"=a, "b"=b), file="last_tile.txt", row.names = F, sep=" \t")
+   }
+   }
   print("all tiles treated, aggregating results...")
   
   #--------------------------------------------------------------------------------------
@@ -406,7 +408,10 @@ if (!resume) #Start new run, do not resume
   x<-list.files("MapSoils", pattern="^soils_[0-9].*\\.tif$") #avoid reading in an old merged map or other files
   for (i in 1:length(x))
   l_soils[[i]]<-raster(paste0("MapSoils/",x[i]))
-  m_soils<-do.call(raster::merge, l_soils)
+  
+  if (length(x)==1)
+    m_soils<- l_soils[[i]] else
+    m_soils<-do.call(raster::merge, l_soils)
 
   #storage.mode(m_soils[])  
   m_soils[]=as.integer(m_soils[]) #convert to integer

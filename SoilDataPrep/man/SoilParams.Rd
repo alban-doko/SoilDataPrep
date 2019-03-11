@@ -10,7 +10,7 @@ Function to treat the study area tile by tile. Slope is derived from the DEM to 
 \arguments{
 \item{catch}{shapefile of the catchment/study area, different projections are accepted. Read the shapefile with readOGR().}
 \item{DEM}{digital elevation model of the study area (raster), different projections are accepted. Use gcs WGS1984 longlat directly to save time or if you run into memory problems. Read the raster file with raster().}
-\item{c}{maximum number of cells in x and y direction for single tiles, default is set to 1000. Decrease this number if you run into memory limitations.}
+\item{c}{maximum number of cells in x and y direction for single tiles, default is set to 1000, i.e. 1e6 cells. Decrease this number if you run into memory limitations.}
 \item{resume}{resume a previous run, requires the files soil_sum_collected.txt and last_tile.txt. Default: FALSE}
 }
 
