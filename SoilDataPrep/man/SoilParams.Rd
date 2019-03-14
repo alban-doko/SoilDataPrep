@@ -22,7 +22,7 @@ The following files are produced:
 \item{soil_sum_recent}{Shows the results of the last calculated tile}
 \item{soil_sum_collected}{Table where the results of all tiles are put together}
 \item{soil_sum_weighted}{The final result of all tiles containing mean values for each soil_id, weighted due to the number of occurrence}
-\item{Mapsoils/soils_catchment.tif}{Map with the new soil IDs; 1000 was added to soils within alluvial areas }
+\item{Mapsoils/soils_catchment.tif}{Map with the new soil IDs; 1000 was added to soils within alluvial areas. See Details below. }
 
 Input tables for WASA-SED:
 \item{particle_classes}{Definition of particle classes}
@@ -31,8 +31,29 @@ Input tables for WASA-SED:
 \item{soils}{Bedrock, alluvium and organic matter content for each soil_id}
 }
 
+\details{
+\bold{generated soil map}\cr
+     The resulting soil map in Mapsoils/soils_catchment.tif is based on the soil classes given in the SoilGrids layer TAXNWRB ("most probable soil class").
+	 Soils identified as especially deep have been tagged as "alluvial" and their respective ID increased by 1000.
+
+    Codes and names: ftp://ftp.soilgrids.org/legends/TAXNWRB.qml 
+
+    Legend & short characteristic of soil types: ftp://ftp.soilgrids.org/data/recent/SoilGrids250m_TAXNWRB_legend_June_2016.pdf
+
+    Index of all SoilGrids legends: ftp://ftp.soilgrids.org/legends/
+ 
+
 \references{
-%% ~put references to the literature/web site here ~
+Explanation & paper on SoilGrids:
+
+        General explanation SoilGrids: https://www.isric.org/explore/soilgrids/
+
+        SoilGrids250m: Global gridded soil information based on machine learning: https://journals.plos.org/plosone/article?id=10.1371/journal.pone.0169748#pone.0169748.ref015
+
+FAO legend & explanation of soil types:
+
+    World reference base for soil resources 2014: http://www.fao.org/3/i3794en/I3794en.pdf
+
 }
 \author{
 Sophia Dobkowitz <dobkowitz@uni-potsdam.de>
