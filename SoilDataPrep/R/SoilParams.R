@@ -57,7 +57,7 @@ if (!resume) #Start new run, do not resume
   soil_sum_collected = NULL #aggregates results of single tiles
   dir.create("MapSoils", showWarnings = FALSE) #Create a folder to store map of new soil ids
   unlink("MapSoils/*.*") #delete maps of prior runs
-  start=data.frame(a=1, b=1) #Start from the first tile####
+  start=data.frame(a=1, b=0) #Start from the first tile####
  } 
   
   
@@ -70,8 +70,11 @@ if (!resume) #Start new run, do not resume
       print(paste("Treating tile", a,b, Sys.time(), "Memory in use:", memory.size(max=F)))
       
       #Crop DEM to extent of current tile
-      dem<-crop(DEM, extent(DEM,((a-1)*vcells +1), a*vcells,((b-1)*hcells +1), b*hcells))    
+      dem<-crop(DEM, extent(DEM,((a-1)*vcells -4), a*vcells,((b-1)*hcells -4), b*hcells))    
       dem<-mask(x=dem, mask=catch) #set cells outside the catchment to NA
+      
+
+      
       
       #Jump tiles outside the catchment/study area
       if(sum(is.na(getValues(dem)))==length(getValues(dem))) 
@@ -145,7 +148,7 @@ if (!resume) #Start new run, do not resume
 #      depth<-aggregate(depth, fact=f_a)
 
       #load soil grids soil taxonomy
-      soils<-raster("SoilGrids/TAXNWRB.tif")
+      soils<-raster("SoilGrids/wrb.tif")
       soils[]=as.integer(soils[]) #convert to integer
       dataType(soils)="INT2S"
       
@@ -185,25 +188,25 @@ if (!resume) #Start new run, do not resume
       rm(depth)
       
       #Apply PTFs to each horizon####
-      for (soillayer in c("sl1", "sl2", "sl3", "sl4", "sl5", "sl6", "sl7"))
+      for (soillayer in c("sd1", "sd2", "sd3", "sd4", "sd5", "sd6"))
       {
         print(paste("- soillayer", soillayer, Sys.time(), "Memory in use:", memory.size(max=F)))
         
-        clay<-raster(paste0("SoilGrids/CLYPPT_M_", soillayer, ".tif"))
+        clay<-raster(paste0("SoilGrids/clay_", soillayer, ".tif"))
         clay<-crop(clay, soils)
-        silt<-raster(paste0("SoilGrids/SLTPPT_M_", soillayer, ".tif"))
+        silt<-raster(paste0("SoilGrids/silt_", soillayer, ".tif"))
         silt<-crop(silt, soils)
-        sand<-raster(paste0("SoilGrids/SNDPPT_M_", soillayer, ".tif"))
+        sand<-raster(paste0("SoilGrids/sand_", soillayer, ".tif"))
         sand<-crop(sand, soils)
-        coarse<-raster(paste0("SoilGrids/CRFVOL_M_", soillayer, ".tif"))
+        coarse<-raster(paste0("SoilGrids/cfvo_", soillayer, ".tif"))
         coarse<-crop(coarse, soils)
-        bulkD<-raster(paste0("SoilGrids/BLDFIE_M_", soillayer, ".tif"))
+        bulkD<-raster(paste0("SoilGrids/bdod_", soillayer, ".tif"))
         bulkD<-crop(bulkD,soils)
-        om<-raster(paste0("SoilGrids/ORCDRC_M_", soillayer, ".tif"))
+        om<-raster(paste0("SoilGrids/soc_", soillayer, ".tif"))
         om<-crop(om, soils)
-        ph<-raster(paste0("SoilGrids/PHIHOX_M_", soillayer, ".tif"))
+        ph<-raster(paste0("SoilGrids/phh2o_", soillayer, ".tif"))
         ph<-crop(ph, soils)
-        cec<-raster(paste0("SoilGrids/CECSOL_M_", soillayer, ".tif"))
+        cec<-raster(paste0("SoilGrids/cec_", soillayer, ".tif"))
         cec<-crop(cec,soils)
         
         soil_attributes=data.frame(clay  =getValues(clay),
@@ -211,9 +214,9 @@ if (!resume) #Start new run, do not resume
                                    bulkD  =getValues(bulkD)/1000,
                                    om     =1.74 * getValues(om)/10, #convert OC to OM
                                    coarse_frag =getValues(coarse),
-                                   topSoil=as.numeric(soillayer=="sl1"))
+                                   topSoil=as.numeric(soillayer=="sd1"))
         
-        euptf_attributes=data.frame(TOPSOIL= ifelse(soillayer=="sl1", "top","sub"),
+        euptf_attributes=data.frame(TOPSOIL= ifelse(soillayer=="sd1", "top","sub"),
                                     USSAND= getValues(sand),
                                     USSILT = getValues(silt),
                                     USCLAY  = getValues(clay),
@@ -321,27 +324,26 @@ if (!resume) #Start new run, do not resume
   write.table(x=soil_means2, file="soil_sum_weighted.txt", sep=" \t")
   
   #Thickness [mm] - set thickness of soil layers from those used in soilgrids
-  soil_means2$sl1thickness = 25 
-  soil_means2$sl2thickness = 75
-  soil_means2$sl3thickness = 120
-  soil_means2$sl4thickness = 230
-  soil_means2$sl5thickness = 350
-  soil_means2$sl6thickness = 700
-  soil_means2$sl7thickness = 500
+  soil_means2$sd1thickness = 50 
+  soil_means2$sd2thickness = 100
+  soil_means2$sd3thickness = 150
+  soil_means2$sd4thickness = 300
+  soil_means2$sd5thickness = 400
+  soil_means2$sd6thickness = 1000
   
   #Convert unit of coarse from % to [-]
-  soil_means2$sl1coarse_frag = soil_means2$sl1coarse_frag / 100 
-  soil_means2$sl2coarse_frag = soil_means2$sl2coarse_frag / 100 
-  soil_means2$sl3coarse_frag = soil_means2$sl3coarse_frag / 100
-  soil_means2$sl4coarse_frag = soil_means2$sl4coarse_frag / 100
-  soil_means2$sl5coarse_frag = soil_means2$sl5coarse_frag / 100
-  soil_means2$sl6coarse_frag = soil_means2$sl6coarse_frag / 100
-  soil_means2$sl7coarse_frag = soil_means2$sl7coarse_frag / 100
+  soil_means2$sd1coarse_frag = soil_means2$sd1coarse_frag / 100 
+  soil_means2$sd2coarse_frag = soil_means2$sd2coarse_frag / 100 
+  soil_means2$sd3coarse_frag = soil_means2$sd3coarse_frag / 100
+  soil_means2$sd4coarse_frag = soil_means2$sd4coarse_frag / 100
+  soil_means2$sd5coarse_frag = soil_means2$sd5coarse_frag / 100
+  soil_means2$sd6coarse_frag = soil_means2$sd6coarse_frag / 100
+
   
   #Prepare output files to be imported into make_wasa_db####
   #For table soils
   soil_means2$bedrock_flag = 1 - soil_means2$alluvial_flag  #bedrock below all profiles except the alluvial ones
-  write.table(file="soil.dat", x=data.frame(pid=soil_means2$soil_id, description="NA", bedrock_flag=soil_means2$bedrock_flag, alluvial_flag=soil_means2$alluvial_flag, b_om=soil_means2$sl1om),
+  write.table(file="soil.dat", x=data.frame(pid=soil_means2$soil_id, description="NA", bedrock_flag=soil_means2$bedrock_flag, alluvial_flag=soil_means2$alluvial_flag, b_om=soil_means2$sd1om),
               sep="\t", quote=FALSE, row.names=FALSE)
   
   #For table horizons
@@ -355,7 +357,7 @@ if (!resume) #Start new run, do not resume
     cumulated_thickness=0 #sum of thickness of layers
     srow=which(soil_means2$soil_id==soil_id)
     last_horizon=FALSE #flag for exiting loop below on reaching the lowermost horizon
-    for (soillayer in c("sl1", "sl2", "sl3", "sl4", "sl5", "sl6", "sl7"))
+    for (soillayer in c("sd1","sd2", "sd3", "sd4", "sd5", "sd6"))
     {
       
       hcounter=hcounter+1 
@@ -373,7 +375,7 @@ if (!resume) #Start new run, do not resume
       hfields=intersect (paste0(soillayer, hor_fields), names(soil_means2) ) #fields to extract for current horizon
       oline=soil_means2[srow, hfields] #extract the current horizon
       oline=cbind(pid=hcounter, description="NA", soil_id=soil_id, 
-                  position = as.numeric(sub(soillayer,pattern = "sl", repl="")),
+                  position = as.numeric(sub(soillayer,pattern = "sd", repl="")),
                   oline)
       
       write.table(file="horizons.dat", x=format(oline, digits=4),
@@ -385,10 +387,10 @@ if (!resume) #Start new run, do not resume
   }
   
   #For table r_soil_contains_particles (only topsoil is considered)  
-  soil_means2$sl1sand=100-(soil_means2$sl1silt+soil_means2$sl1clay)
+  soil_means2$sd1sand=100-(soil_means2$sd1silt+soil_means2$sd1clay)
   soil_idss=rep(soil_means2$soil_id, each=3)
   class_id  =rep(1:3, nrow(soil_means2))
-  tt=matrix(c(soil_means2$sl1clay, soil_means2$sl1silt,soil_means2$sl1sand)/100, nrow=length(soil_means2$sl1clay))
+  tt=matrix(c(soil_means2$sd1clay, soil_means2$sd1silt,soil_means2$sd1sand)/100, nrow=length(soil_means2$sd1clay))
   frac    =as.vector(t(tt))
   write.table(file="r_soil_contains_particles.dat", 
               x=data.frame(soil_id=soil_idss,class_id=class_id,fraction=frac),

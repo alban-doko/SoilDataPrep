@@ -4,7 +4,9 @@
 #install these packages from CRAN, if you don't have them:
 library(devtools)
 library(sp)
-
+library(sf)
+library(terra)
+library(raster)
 #install these packages manually, if you don't have them:
 
 #install euptf
