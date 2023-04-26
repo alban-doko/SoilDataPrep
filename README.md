@@ -1,3 +1,5 @@
+# This is a forked version, please double check with original (https://github.com/TillF/SoilDataPrep)
+
 # SoilDataPrep
 
 Prepare soil parameterisation (e.g. for meso-scale hydrological modelling with WASA-SED), using the global datasets SoilGrids and Pelletier et al. (2016). Pedotransfer functions from other packages ```(ptf.rawls{soilwaterptf}, euptf{euptf})``` are applied to calculate soil characteristics.
