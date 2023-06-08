@@ -209,21 +209,21 @@ if (!resume) #Start new run, do not resume
         cec<-raster(paste0("SoilGrids/cec_", soillayer, ".tif"))
         cec<-crop(cec,soils)
         
-        soil_attributes=data.frame(clay  =getValues(clay),
-                                   silt  =getValues(silt),
-                                   bulkD  =getValues(bulkD)/1000,
-                                   om     =1.74 * getValues(om)/10, #convert OC to OM
-                                   coarse_frag =getValues(coarse),
+        soil_attributes=data.frame(clay  =getValues(clay)/10,
+                                   silt  =getValues(silt)/10,
+                                   bulkD  =getValues(bulkD)/100,
+                                   om     =1.74 * getValues(om)/100, #convert OC to OM
+                                   coarse_frag =getValues(coarse)/10,
                                    topSoil=as.numeric(soillayer=="sd1"))
         
         euptf_attributes=data.frame(TOPSOIL= ifelse(soillayer=="sd1", "top","sub"),
-                                    USSAND= getValues(sand),
-                                    USSILT = getValues(silt),
-                                    USCLAY  = getValues(clay),
-                                    OC = getValues(om)/10,
-                                    BD = getValues(bulkD)/1000,
+                                    USSAND= getValues(sand)/10,
+                                    USSILT = getValues(silt)/10,
+                                    USCLAY  = getValues(clay)/10,
+                                    OC = getValues(om)/100,
+                                    BD = getValues(bulkD)/100,
                                     PH_H2O = getValues(ph)/10,
-                                    CEC = getValues(cec)) # 1 cmolc/kg = 1 meq/100g
+                                    CEC = getValues(cec)/10) # 1 cmolc/kg = 1 meq/100g
         
         rm(clay)
         rm(silt)
@@ -232,7 +232,7 @@ if (!resume) #Start new run, do not resume
         rm(om)
         rm(coarse)
         rm(ph)
-       # rm(cec) #keep this a a template
+        #rm(cec) #keep this a a template
         
         
         #Calculate theta_r/pwp/_s and ks with {euptf}####
