@@ -211,7 +211,7 @@ if (!resume) #Start new run, do not resume
         
         soil_attributes=data.frame(clay  =getValues(clay)/10,
                                    silt  =getValues(silt)/10,
-                                   bulkD  =getValues(bulkD)/100,
+                                   bulkD = ifelse(getValues(bulkD) <= 0, NA, getValues(bulkD)/100),
                                    om     =1.74 * getValues(om)/100, #convert OC to OM
                                    coarse_frag =getValues(coarse)/10,
                                    topSoil=as.numeric(soillayer=="sd1"))
@@ -220,8 +220,8 @@ if (!resume) #Start new run, do not resume
                                     USSAND= getValues(sand)/10,
                                     USSILT = getValues(silt)/10,
                                     USCLAY  = getValues(clay)/10,
-                                    OC = getValues(om)/100,
-                                    BD = getValues(bulkD)/100,
+                                    OC = 1.74 * getValues(om)/100,
+                                    BD = ifelse(getValues(bulkD) <= 0, NA, getValues(bulkD)/100),
                                     PH_H2O = getValues(ph)/10,
                                     CEC = getValues(cec)/10) # 1 cmolc/kg = 1 meq/100g
         

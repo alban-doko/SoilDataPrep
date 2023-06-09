@@ -51,11 +51,11 @@ library(SoilDataPrep)
 #---------------------------------------------------------------------------------------
 
 #### get geodata: DTB & SoilGrids####
-catch<-readOGR(dsn = "D:/Alban/Soil/SoilDataPrep-master/SoilDataPrep/basin.shp")
+catch<-readOGR(dsn = "C:/Users/doko/Desktop/00 PHD A.Doko/SoilDataPrep/SoilDataPrep/boundary.shp")
 GetDTB(catch) #download depth-to-bedrock grid
 GetSG(catch) #download soilgrids - grids
 
-DEM<-raster("D:/Alban/Soil/SoilDataPrep-master/SoilDataPrep/dem.tif") # read in DEM
+DEM<-raster("C:/Users/doko/Desktop/00 PHD A.Doko/SoilDataPrep/SoilDataPrep/d.tif") # read in DEM
 
 #### apply pedotransfer functions to grids, aggregate, export result files
 SoilParams(catch, DEM, resume = FALSE)

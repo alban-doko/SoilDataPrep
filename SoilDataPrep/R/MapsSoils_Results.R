@@ -1,56 +1,114 @@
 MapSoils_Results <- function() {
-  # Specify the output folder name
-  output_folder <- "MapSoils_Results"
+  #euptf_attributes # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+  dir.create("euptf_attributes", showWarnings = FALSE)
   
-  # Delete the output folder if it exists
-  if (file.exists(output_folder)) {
-    unlink(output_folder, recursive = TRUE)
+  for (soillayer in c("sd1", "sd2", "sd3", "sd4", "sd5", "sd6")) {
+    print(paste("- soillayer", soillayer, Sys.time()))
+    
+    clay <- raster(paste0("SoilGrids/clay_", soillayer, ".tif"))
+    silt <- raster(paste0("SoilGrids/silt_", soillayer, ".tif"))
+    sand <- raster(paste0("SoilGrids/sand_", soillayer, ".tif"))
+    coarse <- raster(paste0("SoilGrids/cfvo_", soillayer, ".tif"))
+    bulkD <- raster(paste0("SoilGrids/bdod_", soillayer, ".tif"))
+    om <- raster(paste0("SoilGrids/soc_", soillayer, ".tif"))
+    ph <- raster(paste0("SoilGrids/phh2o_", soillayer, ".tif"))
+    cec <- raster(paste0("SoilGrids/cec_", soillayer, ".tif"))
+    
+    topsoil <- ifelse(soillayer == "sd1", "top", "sub")
+    
+    sand_raster <- raster(sand)
+    silt_raster <- raster(silt)
+    clay_raster <- raster(clay)
+    om_raster <- raster(om)
+    bulkD_raster <- raster(bulkD)
+    ph_raster <- raster(ph)
+    cec_raster <- raster(cec)
+    topsoil_raster <- raster(clay)
+    
+    values(sand_raster) <- as.numeric(getValues(sand)) / 10
+    values(silt_raster) <- as.numeric(getValues(silt)) / 10
+    values(clay_raster) <- as.numeric(getValues(clay)) / 10
+    values(om_raster) <- (1.74 * as.numeric(getValues(om))) / 100
+    values(bulkD_raster) <- as.numeric(ifelse(getValues(bulkD) <= 0, NA, getValues(bulkD)/100)) 
+    values(ph_raster) <- as.numeric(getValues(ph)) / 10
+    values(cec_raster) <- as.numeric(getValues(cec)) / 10
+    values(topsoil_raster) <- as.numeric(topsoil)
+    
+    sand_output_file <- paste0("euptf_attributes/USSAND_", soillayer, ".tif")
+    silt_output_file <- paste0("euptf_attributes/USSILT_", soillayer, ".tif")
+    clay_output_file <- paste0("euptf_attributes/USCLAY_", soillayer, ".tif")
+    om_output_file <- paste0("euptf_attributes/OC_", soillayer, ".tif")
+    bulkD_output_file <- paste0("euptf_attributes/BD_", soillayer, ".tif")
+    ph_output_file <- paste0("euptf_attributes/PH_H2O_", soillayer, ".tif")
+    cec_output_file <- paste0("euptf_attributes/CEC_", soillayer, ".tif")
+    
+    writeRaster(sand_raster, sand_output_file, format = "GTiff")
+    writeRaster(silt_raster, silt_output_file, format = "GTiff")
+    writeRaster(clay_raster, clay_output_file, format = "GTiff")
+    writeRaster(om_raster, om_output_file, format = "GTiff")
+    writeRaster(bulkD_raster, bulkD_output_file, format = "GTiff")
+    writeRaster(ph_raster, ph_output_file, format = "GTiff")
+    writeRaster(cec_raster, cec_output_file, format = "GTiff")
+    
+    
   }
   
-  # Create a new output folder
-  dir.create(output_folder)
+  ###############################################################################
+  # Create a directory to store the output rasters
+  dir.create("euptf_rasters", showWarnings = FALSE)
   
-  # Read the raster file using a relative path
-  raster_file <- "MapSoils/soils_catchment.tif"
-  raster_data <- raster(raster_file)
-  
-  # Read the table data from .dat file
-  table_data <- read.table("horizons.dat", header = TRUE)
-  
-  print(table_data)
-  
-  # Get unique positions in the table
-  positions <- unique(table_data$position)
-  
-  # Subset the table data to include only the desired parameters
-  desired_parameters <- c("theta_r", "theta_pwp", "fk", "fk63", "nfk", "theta_s", "ks", "suction")
-  subset_table_data <- table_data[, c("soil_id", "position", desired_parameters)]
-  
-  # Iterate over each position
-  for (pos in positions) {
-    # Subset the table for the current position
-    subset_data <- subset_table_data[subset_table_data$position == pos, ]
+  for (soillayer in c("sd1", "sd2", "sd3", "sd4", "sd5", "sd6")) {
+    print(paste("- soillayer", soillayer, Sys.time(), "Memory in use:", memory.size(max = FALSE)))
     
-    # Iterate over each parameter
-    for (param in desired_parameters) {
-      # Create a new raster to store the modified values
-      new_raster_data <- raster_data
+    clay <- raster(paste0("SoilGrids/clay_", soillayer, ".tif"))
+    silt <- raster(paste0("SoilGrids/silt_", soillayer, ".tif"))
+    sand <- raster(paste0("SoilGrids/sand_", soillayer, ".tif"))
+    coarse <- raster(paste0("SoilGrids/cfvo_", soillayer, ".tif"))
+    bulkD <- raster(paste0("SoilGrids/bdod_", soillayer, ".tif"))
+    om <- raster(paste0("SoilGrids/soc_", soillayer, ".tif"))
+    ph <- raster(paste0("SoilGrids/phh2o_", soillayer, ".tif"))
+    cec <- raster(paste0("SoilGrids/cec_", soillayer, ".tif"))
+    
+    soil_attributes <- data.frame(
+      clay = getValues(clay) / 10,
+      silt = getValues(silt) / 10,
+      bulkD = ifelse(getValues(bulkD) <= 0, NA, getValues(bulkD)/100),
+      om = (1.74 * getValues(om)) / 100,
+      coarse_frag = getValues(coarse) / 10,
+      topSoil = as.numeric(soillayer == "sd1")
+    )
+    
+    euptf_attributes <- data.frame(
+      TOPSOIL = ifelse(soillayer == "sd1", "top", "sub"),
+      USSAND = getValues(sand) / 10,
+      USSILT = getValues(silt) / 10,
+      USCLAY = getValues(clay) / 10,
+      OC = (1.74 * getValues(om)) / 100,
+      BD = ifelse(getValues(bulkD) <= 0, NA, getValues(bulkD)/100),
+      PH_H2O = getValues(ph) / 10,
+      CEC = getValues(cec) / 10
+    )
+    
+    ptf_props <- data.frame(theta_pwp = predict.ptf(newdata = euptf_attributes, ptf = "PTF12"))
+    ptf_props$theta_s <- predict.ptf(newdata = euptf_attributes, ptf = "PTF06")
+    ptf_props$ks <- (10^(predict.ptf(newdata = euptf_attributes, ptf = "PTF17"))) * 10
+    
+    tt <- ptf.rawls(soilprop = soil_attributes, h = 316, parameters = c("theta", "S_f", "theta_r", "h_b", "lambda"))
+    
+    ptf_props$theta_r <- tt[,"theta_r"]
+    ptf_props$fk <- tt[,"theta"]
+    ptf_props$fk63 <- ptf.rawls(soilprop = soil_attributes, h = 63, parameters = "theta")[,"theta"]
+    ptf_props$suction <- tt[,"S_f"]
+    ptf_props$bubb_pres <- tt[,"h_b"]
+    ptf_props$pore_size_i <- tt[,"lambda"]
+    
+    # Save the rasters for each parameter
+    for (param in c("theta_s", "theta_pwp", "ks", "theta_r", "fk", "fk63", "suction", "bubb_pres", "pore_size_i")) {
+      param_raster <- raster(clay)
+      values(param_raster) <- ptf_props[[param]]
       
-      # Iterate over each row in the subset data and assign the corresponding parameter value
-      for (i in 1:nrow(subset_data)) {
-        soil_id <- subset_data$soil_id[i]
-        param_value <- subset_data[[param]][i]
-        
-        # Assign the parameter value to the corresponding soil_id in the raster
-        new_raster_data[raster_data == soil_id] <- param_value
-      }
-      
-      # Save the new raster to the output folder
-      new_raster_file <- file.path(output_folder, paste0(param, "_sd", pos, ".tif"))
-      writeRaster(new_raster_data, new_raster_file, format = "GTiff")
-      
-      # Print the path to the new raster file
-      print(new_raster_file)
+      param_output_file <- paste0("euptf_rasters/", param, "_", soillayer, ".tif")
+      writeRaster(param_raster, param_output_file, format = "GTiff")
     }
   }
 }
