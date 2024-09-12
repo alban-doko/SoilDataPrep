@@ -419,6 +419,6 @@ if (!resume) #Start new run, do not resume
   m_soils[]=as.integer(m_soils[]) #convert to integer
   dataType(m_soils)="INT2S"
   
-  writeRaster(m_soils, file="Mapsoils/soils_catchment.tif", overwrite=T, datatype="INT2S")
+  writeRaster(m_soils, file="MapSoils/soils_catchment.tif", overwrite=T, datatype="INT2S")
 
 }
